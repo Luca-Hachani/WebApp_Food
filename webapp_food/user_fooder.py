@@ -2,11 +2,12 @@
 import numpy as np
 import pandas as pd
 from dataclasses import dataclass, field
+from typing import Dict
 
 @dataclass
 class User:
     type_of_dish_: str  # Attribut d'instance
-    recipes_preferences: dict = field(default_factory=dict)
+    recipes_preferences: dict = field(default_factory=dict) # Attribut d'instance
     interactions_main_: pd.DataFrame = field(init=False, repr=False)  # Chargé au runtime
     interactions_dessert_: pd.DataFrame = field(init=False, repr=False)  # Chargé au runtime
     
@@ -68,6 +69,15 @@ class User:
             print(cls.interactions_dessert_.info())
             print(cls.interactions_dessert_.head())
     
+    # property method
+    @property
+    def get_type_of_dish(self):
+        return self.type_of_dish_
+    
+    @property
+    def get_recipes_preferences(self):
+        return self.recipes_preferences
+    
     # methods
     def recipe_suggestion(self):
         if self.type_of_dish_=="main":
@@ -85,23 +95,39 @@ class User:
             interactions_abs = self.abs_deviation(recipes_rating, interactions_pivot)
             interactions_pivot["dist"] = interactions_abs.sum(axis=1)
             interactions_selection = self.near_neighboor(self, recipes_id, interactions, interactions_pivot)
-            recipe_suggested = interactions_selection.sum(axis=0).idxmax()
+            recipe_suggested = int(interactions_selection.sum(axis=0).idxmax())
         return recipe_suggested
+    
+    def add_preferences(self, recipe_suggested, rating):
+        self.recipes_preferences[recipe_suggested] = rating
+    
+    def del_preferences(self, recipe_deleted):
+        del self.recipes_preferences[recipe_deleted]
     
 #test
 
-dico = {116345 : 1, 32907 : -1}
-# dico = {}
-np.array(list(dico.values()))
-print(np.array(list(dico.values())))
-print(len(dico))
-
-type_of_dish = "main"
 # Créer un utilisateur
+type_of_dish = "main"
+dico = {116345 : 1, 32907 : -1}
+# dico : Dict[str, float] = {}
 user1 = User(type_of_dish_=type_of_dish, recipes_preferences=dico)
-print('type of dish =', user1.type_of_dish_)
-print('dict of user_preferences', user1.recipes_preferences)
-print(user1.recipe_suggestion())
+print("recipe historic =", list(dico.keys()))
+print("rating historic =", list(dico.values()))
+print("type of dish =", user1.get_type_of_dish)
+print("former dict of user's preferences =", user1.get_recipes_preferences)
+
+# Lui Suggérer une recette
+recipe_suggested = user1.recipe_suggestion()
+print("recipes suggested =", recipe_suggested)
+
+# Ajouter ses préférences
+rating = 1
+user1.add_preferences(recipe_suggested=recipe_suggested, rating=rating)
+print("new dict of user's preferences =", user1.get_recipes_preferences)
+
+# Supprimer ses préférences
+user1.del_preferences(recipe_deleted=116345)
+print("edited dict of user's preferences =", user1.get_recipes_preferences)
 
 # Affiche le dataset
-User.dataset_interaction(type_of_dish)
+# User.dataset_interaction(type_of_dish)
