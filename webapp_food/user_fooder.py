@@ -2,7 +2,6 @@
 import numpy as np
 import pandas as pd
 from dataclasses import dataclass, field
-from typing import Dict
 
 @dataclass
 class User:
@@ -318,31 +317,3 @@ class User:
             ID de la recette à supprimer des préférences.
         """
         del self._preferences[recipe_deleted]
-    
-#test
-
-# Créer un utilisateur
-type_of_dish = "main"
-dico = {116345 : 1, 32907 : -1}
-# dico : Dict[str, float] = {}
-user1 = User(_type_of_dish=type_of_dish, _preferences=dico)
-print("recipe historic =", list(dico.keys()))
-print("rating historic =", list(dico.values()))
-print("type of dish =", user1.get_type_of_dish)
-print("former dict of user's preferences =", user1.get_preferences)
-
-# Lui Suggérer une recette
-recipe_suggested = user1.recipe_suggestion()
-print("recipes suggested =", recipe_suggested)
-
-# Ajouter ses préférences
-rating = 1
-user1.add_preferences(recipe_suggested=recipe_suggested, rating=rating)
-print("new dict of user's preferences =", user1.get_preferences)
-
-# Supprimer ses préférences
-user1.del_preferences(recipe_deleted=116345)
-print("edited dict of user's preferences =", user1.get_preferences)
-
-# Affiche le dataset
-# User.dataset_interaction(type_of_dish)
