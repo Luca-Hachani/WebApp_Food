@@ -27,7 +27,7 @@ class User:
     __post_init__() -> None
         Méthode exécutée après l'initialisation pour valider le type de plat et charger les datasets.
 
-    test_type_of_dish(type_of_dish: str) -> None
+    validity_type_of_dish(type_of_dish: str) -> None
         Vérifie si le type de plat est valide ("main" ou "dessert"). Lève une erreur en cas d'invalidité.
 
     pivot_table_of_df(interactions_reduce: pd.DataFrame) -> pd.DataFrame
@@ -102,14 +102,14 @@ class User:
             Si le type de plat (_type_of_dish) est invalide.
         """
         # Teste la validité du type de plat
-        self.test_type_of_dish(self._type_of_dish)
+        self.validity_type_of_dish(self._type_of_dish)
         
         # Charge les datasets (une seule fois, pour éviter une surcharge inutile)
         self.load_datasets()
     
     # static methods
     @staticmethod
-    def test_type_of_dish(type_of_dish)-> None:
+    def validity_type_of_dish(type_of_dish)-> None:
         """
         Vérifie si le type de plat est valide.
 
@@ -229,7 +229,7 @@ class User:
         ValueError:
             Si le type de plat est invalide.
         """
-        cls.test_type_of_dish(type_of_dish)  # Vérifie si le type est valide
+        cls.validity_type_of_dish(type_of_dish)  # Vérifie si le type est valide
         if type_of_dish == "main":
             print(cls._interactions_main.info())
             print(cls._interactions_main.head())
