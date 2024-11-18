@@ -1,0 +1,58 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
+    branches:
+      - main
+      - dev
+ 
+jobs:
+  lint:
+    name: Lint code
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+          
+      - name: Install Flake 8
+        run: |
+          python --version
+          pip install --upgrade pip
+          pip install flake8
+
+      - name: Run Flake 8
+        run: flake8 .
+    continue-on-error: true
+          
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      # import the repo in the runner
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      # install python in the runner
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.12
+        
+      # install the conda environement
+      - name: Install dependencies
+        run: 
+          $CONDA/bin/conda env update --file environment_dev.yml --name base
+
+      # Run tests with coverage and enforce threshold
+      - name: Run tests with coverage
+        run: |
+          $CONDA/bin/pytest --cov=. --cov-report=xml --cov-fail-under=90
