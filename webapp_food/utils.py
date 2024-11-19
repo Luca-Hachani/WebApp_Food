@@ -7,6 +7,10 @@ from bs4 import BeautifulSoup
 # use the requests library to search for images on Google
 
 
+class ImageError(Exception):
+    pass
+
+
 def search_images(search_term):
     """use the requests library to search for images on Google
 
@@ -24,12 +28,15 @@ def print_image(search_term, n=1):
     Args:
         search_term (string): name of the image to search for
     """
-    html = search_images(search_term)
-    soup = BeautifulSoup(html, 'html.parser')
-    img_tags = soup.find_all('img', {'src': re.compile('gstatic.com')})
-    imgs = []
-    for i, img_tag in enumerate(img_tags):
-        if i >= n:
-            break
-        imgs.append(img_tag['src'])
-    return imgs
+    try:
+        html = search_images(search_term)
+        soup = BeautifulSoup(html, 'html.parser')
+        img_tags = soup.find_all('img', {'src': re.compile('gstatic.com')})
+        imgs = []
+        for i, img_tag in enumerate(img_tags):
+            if i >= n:
+                break
+            imgs.append(img_tag['src'])
+        return imgs
+    except:
+        raise ImageError("No image found for this recipe")
