@@ -38,12 +38,12 @@ def setup_user():
     main_data = pd.DataFrame({
         'user_id': [1, 2, 3],
         'recipe_id': [101, 102, 103],
-        'rating': [1, 1, -1]
+        'rate': [1, 1, -1]
     })
     dessert_data = pd.DataFrame({
         'user_id': [1, 2],
         'recipe_id': [201, 202],
-        'rating': [1, -1]
+        'rate': [1, -1]
     })
 
     # Simuler les fichiers CSV dans la classe User
@@ -68,7 +68,7 @@ def test_pivot_table_of_df():
     main_data = pd.DataFrame({
         'user_id': [1, 2, 3],
         'recipe_id': [101, 102, 103],
-        'rating': [1, 1, -1]
+        'rate': [1, 1, -1]
     })
     pivot_table = uf.User.pivot_table_of_df(main_data)
     assert pivot_table.shape == (3, 3)

@@ -221,8 +221,8 @@ class User:
         Notes:
         ------
         - Les fichiers CSV sont chargés uniquement une fois au niveau de la classe.
-        - Les fichiers doivent se trouver aux emplacements spécifiés ("data/Preprocessed_interactions_main.csv" 
-        et "data/Preprocessed_interactions_dessert.csv").
+        - Les fichiers doivent se trouver aux emplacements spécifiés ("data/data/PP_user_main_dishes.csv" 
+        et "data/PP_user_desserts").
         """
         if not hasattr(cls, "_interactions_main") or not hasattr(cls, "_interactions_dessert"):
             cls._interactions_main = pd.read_csv(
