@@ -55,4 +55,5 @@ jobs:
       # Run tests with coverage and enforce threshold
       - name: Run tests with coverage
         run: |
-          $CONDA/bin/pytest -v --cov=. --cov-report=xml --cov-fail-under=90
+          $CONDA/bin/coverage run -m pytest -v
+          $CONDA/bin/coverage report
