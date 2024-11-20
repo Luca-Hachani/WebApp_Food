@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 
 
 class ImageError(Exception):
-    pass
+    """Raised when an image cannot be found for a recipe"""
 
 
 def search_images(search_term):
@@ -38,5 +38,5 @@ def print_image(search_term, n=1):
                 break
             imgs.append(img_tag['src'])
         return imgs
-    except:
-        raise ImageError("No image found for this recipe")
+    except Exception as exc:
+        raise ImageError("No image found for this recipe") from exc
