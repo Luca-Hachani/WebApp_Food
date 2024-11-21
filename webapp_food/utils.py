@@ -1,8 +1,10 @@
 """ This module contains utility functions for the webapp_food module. 
     The functions are used to search for recipe images on Google."""
+from ast import literal_eval
 import re
 import requests
 from bs4 import BeautifulSoup
+from webapp_food.user_fooder import User
 
 # use the requests library to search for images on Google
 
@@ -37,6 +39,21 @@ def print_image(search_term, n=1):
             if i >= n:
                 break
             imgs.append(img_tag['src'])
+        if not imgs:
+            raise ImageError("No image found for this recipe")
         return imgs
     except Exception as exc:
         raise ImageError("No image found for this recipe") from exc
+
+
+def update_preferences(user, recipe_index, preference_value):
+    """Update user preferences based on like or dislike actions."""
+    user.add_preferences(recipe_index, preference_value)
+
+
+def fetch_recipe_details(recipes_df, recipe_index):
+    """Fetch recipe details (steps and ingredients)."""
+    recipe = recipes_df.loc[recipe_index]
+    steps = literal_eval(recipe['steps'])
+    ingredients = literal_eval(recipe['ingredients'])
+    return steps, ingredients

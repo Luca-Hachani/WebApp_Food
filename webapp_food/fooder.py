@@ -4,20 +4,17 @@ to like or dislike the recipes proposed and to see the explanations of the websi
 The user can also see the recommended recipes and their details."""
 from ast import literal_eval
 import streamlit as st
-import utils
-import user_fooder
+from webapp_food.utils import update_preferences, print_image, ImageError, fetch_recipe_details
+from webapp_food.user_fooder import User
 import pandas as pd
 
-st.set_page_config(
-    page_title="fooder", page_icon="img/fooder_logo2.png", initial_sidebar_state="collapsed"
-)
+# Session state initialization
+if not st.session_state:
+    st.session_state.raw_recipes = pd.read_csv(
+        'data/PP_recipes_data.csv', index_col=0)
 
-LIKE = False
-DISLIKE = False
-MAIN = False
-DESSERT = False
-EXPLANATIONS = False
-HISTORY = False
+# Page state variables
+LIKE = DISLIKE = MAIN = DESSERT = EXPLANATIONS = HISTORY = False
 
 
 """
@@ -27,22 +24,28 @@ depending on the user's actions on the website
 if not st.session_state:
     st.session_state.raw_recipes = pd.read_csv(
         'data/PP_recipes_data.csv', index_col=0)
+
 if st.session_state.get("like"):
     LIKE, MAIN, DESSERT = True, False, False
-    st.session_state.user.add_preferences(
-        st.session_state.last_recommended_index, 1)
+    update_preferences(st.session_state.user,
+                       st.session_state.last_recommended_index, 1)
+
 if st.session_state.get("dislike"):
     DISLIKE, MAIN, DESSERT = True, False, False
-    st.session_state.user.add_preferences(
-        st.session_state.last_recommended_index, -1)
+    update_preferences(st.session_state.user,
+                       st.session_state.last_recommended_index, -1)
+
 if st.session_state.get("main"):
     DESSERT, MAIN = False, True
-    st.session_state.user = user_fooder.User('main')
+    st.session_state.user = User('main')
+
 if st.session_state.get("dessert"):
     MAIN, DESSERT = False, True
-    st.session_state.user = user_fooder.User('dessert')
+    st.session_state.user = User('dessert')
+
 if st.session_state.get("explanations"):
     EXPLANATIONS = True
+
 if st.session_state.get("retour"):
     EXPLANATIONS = False
     if st.session_state.get("user"):
@@ -103,8 +106,8 @@ if MAIN_PAGE:
     st.title("Fooder")
     st.write(
         """
-        <div style="text-align: center;">
-            Are you in the mood for a main dish or a dessert? Choose one below:
+        <div style="text-align: center;font-size:20px">
+            Are you in the mood for a main dish or a dessert? Choose one below:<br><br><br>
         </div>
         """,
         unsafe_allow_html=True,
@@ -144,7 +147,7 @@ if RECOMMENDATION_PAGE:
     col1.button("❌", key="dislike", help="Dislike", use_container_width=True)
     col3.button("✅", key="like", help="Like", use_container_width=True)
     try:
-        images = utils.print_image(
+        images = print_image(
             st.session_state.raw_recipes.loc[st.session_state.last_recommended_index]['name'], 1)[0]
         col2.markdown(
             f"""
@@ -153,18 +156,16 @@ if RECOMMENDATION_PAGE:
             </div>
             """,
             unsafe_allow_html=True)
-    except utils.ImageError as e:
+    except ImageError as e:
         col2.write(e)
     st.write("")
     col1, col2 = st.columns(2, gap="small")
+    steps, ingredients = fetch_recipe_details(
+        st.session_state.raw_recipes, st.session_state.last_recommended_index)
     exp = col1.expander("Recipe's steps")
-    exp.write('  \n'.join(literal_eval(
-        st.session_state.raw_recipes.loc[
-                          st.session_state.last_recommended_index]['steps'])))
+    exp.write('  \n'.join(steps))
     exp2 = col2.expander("Recipe's ingredients")
-    exp2.write('  \n'.join(literal_eval(
-        st.session_state.raw_recipes.loc[
-            st.session_state.last_recommended_index]['ingredients'])))
+    exp2.write('  \n'.join(ingredients))
     st.write(
         """
     <div style="text-align: center;">

@@ -7,9 +7,8 @@ source =
 [report]
 # Affiche les lignes manquantes dans le rapport
 show_missing = True
-omit =
-    webapp_food/fooder.py
-    webapp_food/utils.py
+omit = fooder.py
+
 
 # Exclut certaines lignes du calcul de couverture
 exclude_lines =

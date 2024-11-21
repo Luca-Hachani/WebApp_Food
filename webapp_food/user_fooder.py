@@ -338,7 +338,18 @@ class User:
             interactions_pivot["dist"] = interactions_abs.sum(axis=1)
             interactions_selection = self.near_neighboor(
                 recipes_id, interactions, interactions_pivot)
-            recipe_suggested = int(interactions_selection.sum(axis=0).idxmax())
+            if interactions_selection.empty:
+                # drop recipes already in preferences
+                interactions_selection = interactions[~interactions['recipe_id'].isin(
+                    recipes_id)]
+                if interactions_selection.empty:
+                    raise ValueError('No more recipes to suggest.')
+                else:
+                    recipe_suggested = interactions_selection["recipe_id"].sample(
+                        n=1).iloc[0]
+            else:
+                recipe_suggested = int(
+                    interactions_selection.sum(axis=0).idxmax())
         return recipe_suggested
 
     def add_preferences(self, recipe_suggested, rating) -> None:
@@ -362,5 +373,14 @@ class User:
         ----------
         recipe_deleted : int
             ID de la recette à supprimer des préférences.
+
+        Raises:
+        ------
+        KeyError:
+            Si l'ID de la recette à supprimer n'existe pas dans les préférences de l'utilisateur.
         """
-        del self._preferences[recipe_deleted]
+        if recipe_deleted in self._preferences:
+            del self._preferences[recipe_deleted]
+        else:
+            raise KeyError(
+                f'The recipe ID {recipe_deleted} is not in the user preferences.')

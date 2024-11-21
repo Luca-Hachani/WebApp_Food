@@ -32,6 +32,8 @@ from webapp_food import user_fooder as uf
 # # User.dataset_interaction(type_of_dish)
 
 # Configuration des données pour les tests
+
+
 @pytest.fixture
 def setup_user():
     # Simulation des datasets
@@ -55,15 +57,20 @@ def setup_user():
     return user
 
 # Test `validity_type_of_dish`
+
+
 def test_validity_type_of_dish_valid():
     uf.User.validity_type_of_dish("main")
     uf.User.validity_type_of_dish("dessert")
+
 
 def test_validity_type_of_dish_invalid():
     with pytest.raises(ValueError):
         uf.User.validity_type_of_dish("invalid")
 
 # Test `pivot_table_of_df`
+
+
 def test_pivot_table_of_df():
     main_data = pd.DataFrame({
         'user_id': [1, 2, 3],
@@ -75,25 +82,62 @@ def test_pivot_table_of_df():
     assert list(pivot_table.columns) == [101, 102, 103]
 
 # Test `abs_deviation`
+
+
 def test_abs_deviation():
     recipes_rating = np.array([[4.0, 5.0, 3.0]])
     pivot_table = pd.DataFrame({
-        101: [ 1, 0, 0],
-        102: [ 0, 1, 0],
-        103: [ 0, 0,-1]
+        101: [1, 0, 0],
+        102: [0, 1, 0],
+        103: [0, 0, -1]
     })
     abs_dev = uf.User.abs_deviation(recipes_rating, pivot_table)
     assert abs_dev.shape == pivot_table.shape
 
 # Test `add_preferences` et `del_preferences`
+
+
 def test_add_preferences(setup_user):
     user = setup_user
     user.add_preferences(101, 1)
     assert 101 in user.get_preferences
     assert user.get_preferences[101] == 1
 
+# Test that a deleted recipe is no longer in user preferences
+
+
 def test_del_preferences(setup_user):
     user = setup_user
     user.add_preferences(101, 1)
     user.del_preferences(101)
     assert 101 not in user.get_preferences
+
+# Test that deleting a missing recipe in user preferences raises a KeyError
+
+
+def test_del_preferences_invalid(setup_user):
+    user = setup_user
+    with pytest.raises(KeyError):
+        user.del_preferences(999)
+
+
+# Test `recipe_suggestion`
+
+
+def test_recipe_suggestion(setup_user):
+    # Test if the user as no preferences
+    user = setup_user
+    recipe_suggested = user.recipe_suggestion()
+    assert recipe_suggested in user.get_interactions_main['recipe_id'].values
+    assert recipe_suggested not in user.get_preferences.keys()
+    # Test if the user has no near neighbors
+    user.add_preferences(recipe_suggested, 1)
+    recipe_suggested = user.recipe_suggestion()
+    assert recipe_suggested not in user.get_preferences.keys()
+    assert recipe_suggested in user.get_interactions_main['recipe_id'].values
+    # Test if all recipes have been suggested
+    user.add_preferences(recipe_suggested, -1)
+    recipe_suggested = user.recipe_suggestion()
+    user.add_preferences(recipe_suggested, 1)
+    with pytest.raises(ValueError):
+        recipe_suggested = user.recipe_suggestion()
