@@ -1,10 +1,9 @@
-""" This module contains utility functions for the webapp_food module. 
+""" This module contains utility functions for the webapp_food module.
     The functions are used to search for recipe images on Google."""
 from ast import literal_eval
 import re
 import requests
 from bs4 import BeautifulSoup
-from webapp_food.user_fooder import User
 
 # use the requests library to search for images on Google
 

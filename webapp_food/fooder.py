@@ -2,7 +2,6 @@
 It allows the user to choose between a main dish or a dessert,
 to like or dislike the recipes proposed and to see the explanations of the website.
 The user can also see the recommended recipes and their details."""
-from ast import literal_eval
 import streamlit as st
 from webapp_food.utils import update_preferences, print_image, ImageError, fetch_recipe_details
 from webapp_food.user_fooder import User
@@ -133,9 +132,9 @@ if RECOMMENDATION_PAGE:
         st.session_state.user.del_preferences(
             st.session_state.last_recommended_index)
     st.write("""
-             <div style="text-align: center; font-size:20px"> 
-             Here is a recipe for you (please feel free to expand the recipe's details) <br> 
-             Let us know if you like it or not so that we can recommend a better one next.  <br>  
+             <div style="text-align: center; font-size:20px">
+             Here is a recipe for you (please feel free to expand the recipe's details) <br>
+             Let us know if you like it or not so that we can recommend a better one next.  <br>
              For that, click on the 'like' and 'dislike' buttons below:
              </div>
              """,
@@ -185,8 +184,8 @@ if not EXPLANATIONS:
 else:
     st.write(
         """
-        Fooder est un site de recommandation de recettes de cuisine. 
-        Vous pouvez aimer ou ne pas aimer les recettes qui vous 
+        Fooder est un site de recommandation de recettes de cuisine.
+        Vous pouvez aimer ou ne pas aimer les recettes qui vous
         sont proposées pour affiner les recommandations suivantes.
         """
     )

@@ -1,6 +1,5 @@
 import pytest
 from webapp_food.utils import print_image, ImageError, update_preferences, fetch_recipe_details
-from webapp_food.user_fooder import User
 import pandas as pd
 
 

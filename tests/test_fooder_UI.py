@@ -1,7 +1,5 @@
-import pytest
 import streamlit as st
 from webapp_food.fooder import MAIN_PAGE
-from webapp_food.utils import update_preferences, fetch_recipe_details
 import pandas as pd
 
 

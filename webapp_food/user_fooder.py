@@ -1,5 +1,5 @@
-""" 
-Module contenant la classe User pour la recommandation de recettes. 
+"""
+Module contenant la classe User pour la recommandation de recettes.
 """
 # Importation des librairies
 from dataclasses import dataclass, field
@@ -10,7 +10,7 @@ import pandas as pd
 @dataclass
 class User:
     """
-    Classe représentant un utilisateur et ses interactions avec des recettes, 
+    Classe représentant un utilisateur et ses interactions avec des recettes,
     notamment pour proposer des suggestions de recettes basées sur ses préférences.
 
     Attributs :
@@ -18,11 +18,11 @@ class User:
     _type_of_dish : str
         Type de plat préféré de l'utilisateur (doit être "main" ou "dessert").
     _preferences : dict
-        Dictionnaire contenant les préférences de l'utilisateur, 
-        où les clés sont les IDs de recettes 
+        Dictionnaire contenant les préférences de l'utilisateur,
+        où les clés sont les IDs de recettes
         et les valeurs sont les notes attribuées (par défaut, dictionnaire vide).
     _interactions_main : pd.DataFrame
-        Dataset contenant les interactions utilisateur-recette pour 
+        Dataset contenant les interactions utilisateur-recette pour
         les plats principaux (chargé dynamiquement).
     _interactions_dessert : pd.DataFrame
         Dataset contenant les interactions utilisateur-recette pour les desserts (chargé dynamiquement).
@@ -36,7 +36,7 @@ class User:
         Vérifie si le type de plat est valide ("main" ou "dessert"). Lève une erreur en cas d'invalidité.
 
     pivot_table_of_df(interactions_reduce: pd.DataFrame) -> pd.DataFrame
-        Transforme un DataFrame d'interactions en une table pivotée avec les IDs d'utilisateur 
+        Transforme un DataFrame d'interactions en une table pivotée avec les IDs d'utilisateur
         comme index et les IDs de recettes comme colonnes.
 
     abs_deviation(recipes_rating: np.ndarray, interactions_pivot: pd.DataFrame) -> pd.DataFrame
@@ -221,7 +221,7 @@ class User:
         Notes:
         ------
         - Les fichiers CSV sont chargés uniquement une fois au niveau de la classe.
-        - Les fichiers doivent se trouver aux emplacements spécifiés ("data/data/PP_user_main_dishes.csv" 
+        - Les fichiers doivent se trouver aux emplacements spécifiés ("data/data/PP_user_main_dishes.csv"
         et "data/PP_user_desserts").
         """
         if not hasattr(cls, "_interactions_main") or not hasattr(cls, "_interactions_dessert"):
