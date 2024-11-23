@@ -8,6 +8,7 @@ source =
 # Affiche les lignes manquantes dans le rapport
 show_missing = True
 omit = fooder.py
+    __init__.py
 
 
 # Exclut certaines lignes du calcul de couverture

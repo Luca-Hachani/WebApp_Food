@@ -1,9 +1,11 @@
 """ Main file of the web application.
 It allows the user to choose between a main dish or a dessert,
-to like or dislike the recipes proposed and to see the explanations of the website.
+to like or dislike the recipes proposed and 
+to see the explanations of the website.
 The user can also see the recommended recipes and their details."""
 import streamlit as st
-from webapp_food.utils import update_preferences, print_image, ImageError, fetch_recipe_details
+from webapp_food.utils import update_preferences, print_image, \
+    ImageError, fetch_recipe_details
 from webapp_food.user_fooder import User
 import pandas as pd
 import logging
@@ -106,7 +108,8 @@ if MAIN_PAGE:
     st.write(
         """
         <div style="text-align: center;font-size:20px">
-            Are you in the mood for a main dish or a dessert? Choose one below:<br><br><br>
+            Are you in the mood for a main dish or a dessert? Choose one below:
+            <br><br><br>
         </div>
         """,
         unsafe_allow_html=True,
@@ -115,43 +118,53 @@ if MAIN_PAGE:
 # Management of the sidebar
 if RECOMMENDATION_PAGE or MAIN_PAGE:
     st.sidebar.button(
-        "Explanations on the website", key="explanations", help="Explain website's algorithm and dataset used")
+        "Explanations on the website", key="explanations",
+        help="Explain website's algorithm and dataset used")
 # Management of History
 if st.session_state.get("user") and not EXPLANATIONS:
     st.sidebar.write("History of your preferences:")
-    for (key, preference_value) in reversed(st.session_state.user.get_preferences.items()):
-        if st.sidebar.button(st.session_state.raw_recipes.loc[key]['name']+"  \nRating: "+str(preference_value), key=key):
+    for (key, preference_value) in reversed(
+            st.session_state.user.get_preferences.items()):
+        if st.sidebar.button(st.session_state.raw_recipes.loc[key]['name'] +
+                             "  \nRating: "+str(preference_value), key=key):
             st.session_state.last_recommended_index = key
             HISTORY = True
             RECOMMENDATION_PAGE = True
 # Page display: Recommendation page
 if RECOMMENDATION_PAGE:
     if not HISTORY:
-        st.session_state.last_recommended_index = st.session_state.user.recipe_suggestion()
+        st.session_state.last_recommended_index = \
+            st.session_state.user.recipe_suggestion()
     else:
         st.session_state.user.del_preferences(
             st.session_state.last_recommended_index)
     st.write("""
              <div style="text-align: center; font-size:20px">
-             Here is a recipe for you (please feel free to expand the recipe's details) <br>
-             Let us know if you like it or not so that we can recommend a better one next.  <br>
+             Here is a recipe for you 
+             (please feel free to expand the recipe's details) <br>
+             Let us know if you like it or not so that 
+             we can recommend a better one next.  <br>
              For that, click on the 'like' and 'dislike' buttons below:
              </div>
              """,
              unsafe_allow_html=True)
     st.title(
-        st.session_state.raw_recipes.loc[st.session_state.last_recommended_index]['name'])
+        st.session_state.raw_recipes.loc[
+            st.session_state.last_recommended_index]['name'])
     col1, col2, col3 = st.columns(
         [1, 1, 1], gap="small", vertical_alignment="center")
     col1.button("❌", key="dislike", help="Dislike", use_container_width=True)
     col3.button("✅", key="like", help="Like", use_container_width=True)
     try:
         images = print_image(
-            st.session_state.raw_recipes.loc[st.session_state.last_recommended_index]['name'], 1)[0]
+            st.session_state.raw_recipes.loc[
+                st.session_state.last_recommended_index]['name'], 1)[0]
         col2.markdown(
             f"""
             <div style="text-align: center;">
-                <img src="{images}" style="height: 200px; object-fit: cover; border-radius: 50%; border: 2px solid #000;">
+                <img src="{images}" style="height: 200px;
+                object-fit: cover; border-radius: 50%;
+                border: 2px solid #000;">
             </div>
             """,
             unsafe_allow_html=True)
