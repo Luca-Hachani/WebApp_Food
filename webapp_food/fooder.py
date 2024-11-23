@@ -1,6 +1,6 @@
 """ Main file of the web application.
 It allows the user to choose between a main dish or a dessert,
-to like or dislike the recipes proposed and 
+to like or dislike the recipes proposed and
 to see the explanations of the website.
 The user can also see the recommended recipes and their details."""
 import streamlit as st
@@ -140,9 +140,9 @@ if RECOMMENDATION_PAGE:
             st.session_state.last_recommended_index)
     st.write("""
              <div style="text-align: center; font-size:20px">
-             Here is a recipe for you 
+             Here is a recipe for you
              (please feel free to expand the recipe's details) <br>
-             Let us know if you like it or not so that 
+             Let us know if you like it or not so that
              we can recommend a better one next.  <br>
              For that, click on the 'like' and 'dislike' buttons below:
              </div>

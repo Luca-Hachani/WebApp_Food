@@ -1,5 +1,6 @@
 import pytest
-from webapp_food.utils import print_image, ImageError, update_preferences, fetch_recipe_details
+from webapp_food.utils import print_image, ImageError, \
+    update_preferences, fetch_recipe_details
 import pandas as pd
 
 

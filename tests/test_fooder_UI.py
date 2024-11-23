@@ -17,7 +17,8 @@ def test_main_page_rendering(mocker):
         st.write(
             """
             <div style="text-align: center;font-size:20px">
-                Are you in the mood for a main dish or a dessert? Choose one below:<br><br><br>
+                Are you in the mood for a main dish or a dessert?
+                Choose one below:<br><br><br>
             </div>
             """,
             unsafe_allow_html=True,

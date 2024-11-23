@@ -130,7 +130,8 @@ class User:
         # Teste la validité du type de plat
         self.validity_type_of_dish(self._type_of_dish)
 
-        # Charge les datasets (une seule fois, pour éviter une surcharge inutile)
+        # Charge les datasets (une seule fois,
+        # pour éviter une surcharge inutile)
         self.load_datasets()
 
     # static methods
@@ -376,7 +377,7 @@ class User:
                     raise ValueError('No more recipes to suggest.')
                 else:
                     logger.info(
-                        'No more recipes to suggest from the user preferences, \
+                        'No more recipes to suggest from the user preferences,\
                         suggesting a random recipe')
                     recipe_suggested = \
                         interactions_selection["recipe_id"].sample(n=1).iloc[0]
