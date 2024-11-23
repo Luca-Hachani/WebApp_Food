@@ -113,7 +113,7 @@ class User:
             Si le type de plat (_type_of_dish) est invalide.
         """
         logger.debug(
-            f"User instance created, checking type of dish and loading datasets")
+            "User instance created, checking type of dish and loading datasets")
         # Teste la validité du type de plat
         self.validity_type_of_dish(self._type_of_dish)
 
@@ -158,7 +158,7 @@ class User:
             Table pivotée avec les IDs des utilisateurs en index, les IDs des recettes en colonnes,
             et les évaluations en valeurs. Les valeurs manquantes sont remplacées par 0.
         """
-        logger.debug(f"Pivoting DataFrame of interactions")
+        logger.debug("Pivoting DataFrame of interactions")
         interactions_pivot = interactions_reduce.pivot(
             index='user_id', columns='recipe_id', values='rate')
         interactions_pivot = interactions_pivot.fillna(0)
@@ -185,7 +185,7 @@ class User:
             et celles des autres utilisateurs.
         """
         logger.debug(
-            f"Calculating absolute deviation between user preferences and existing interactions")
+            "Calculating absolute deviation between user preferences and existing interactions")
         norm_order = 1
         interactions_abs = np.abs(
             interactions_pivot-recipes_rating)**norm_order
@@ -212,7 +212,7 @@ class User:
             par le nouvel utilisateur.
         """
         logger.debug(
-            f"Selecting near neighbors based on distance and interactions")
+            "Selecting near neighbors based on distance and interactions")
         user_prox_id = interactions_pivot_input.sort_values(
             "dist").head(3).index
         interactions_prox = interactions[interactions['user_id'].isin(
@@ -236,7 +236,7 @@ class User:
         - Les fichiers doivent se trouver aux emplacements spécifiés ("data/data/PP_user_main_dishes.csv"
         et "data/PP_user_desserts").
         """
-        logger.debug(f"Loading datasets for main dishes and desserts")
+        logger.debug("Loading datasets for main dishes and desserts")
         if not hasattr(cls, "_interactions_main") or not hasattr(cls, "_interactions_dessert"):
             cls._interactions_main = pd.read_csv(
                 "data/PP_user_main_dishes.csv", sep=',')
@@ -280,7 +280,7 @@ class User:
         str:
             Type de plat ("main" ou "dessert").
         """
-        logger.debug(f"Getting type of dish for user")
+        logger.debug("Getting type of dish for user")
         return self._type_of_dish
 
     @property
@@ -293,7 +293,7 @@ class User:
         dict:
             Dictionnaire contenant les IDs de recettes comme clés et les notes attribuées comme valeurs.
         """
-        logger.debug(f"Getting preferences for user")
+        logger.debug("Getting preferences for user")
         return self._preferences
 
     @property
@@ -306,7 +306,7 @@ class User:
         pd.DataFrame:
             Dataset des interactions pour les plats principaux.
         """
-        logger.debug(f"Getting interactions dataset for main dishes")
+        logger.debug("Getting interactions dataset for main dishes")
         return self._interactions_main
 
     @property
@@ -319,7 +319,7 @@ class User:
         pd.DataFrame:
             Dataset des interactions pour les desserts.
         """
-        logger.debug(f"Getting interactions dataset for desserts")
+        logger.debug("Getting interactions dataset for desserts")
         return self._interactions_dessert
 
     # methods
@@ -337,7 +337,7 @@ class User:
         - Si aucune préférence n'existe pour le nouvel utilisateur, une recette aléatoire est suggérée.
         - La suggestion repose sur la similarité des utilisateurs voisins proches.
         """
-        logger.debug(f"Proposing a recipe suggestion for user")
+        logger.debug("Proposing a recipe suggestion for user")
         interactions = None
         if self._type_of_dish == "main":
             interactions = self.get_interactions_main

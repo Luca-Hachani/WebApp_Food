@@ -1,6 +1,5 @@
 import streamlit as st
 from webapp_food.fooder import MAIN_PAGE
-import pandas as pd
 
 
 def test_main_page_rendering(mocker):
