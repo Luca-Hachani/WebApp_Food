@@ -5,6 +5,9 @@ Module contenant la classe User pour la recommandation de recettes.
 from dataclasses import dataclass, field
 import numpy as np
 import pandas as pd
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -109,6 +112,8 @@ class User:
         ValueError:
             Si le type de plat (_type_of_dish) est invalide.
         """
+        logger.debug(
+            f"User instance created, checking type of dish and loading datasets")
         # Teste la validité du type de plat
         self.validity_type_of_dish(self._type_of_dish)
 
@@ -131,7 +136,9 @@ class User:
         ValueError:
             Si le type de plat n'est pas "main" ou "dessert".
         """
+        logger.debug(f"Checking validity of type_of_dish={type_of_dish}")
         if type_of_dish not in ["main", "dessert"]:
+            logger.info(f"Invalid type of dish: {type_of_dish}")
             raise ValueError(f'The type of dish must be "main" or "dessert" only, and not "{
                              type_of_dish}".')
 
@@ -151,6 +158,7 @@ class User:
             Table pivotée avec les IDs des utilisateurs en index, les IDs des recettes en colonnes,
             et les évaluations en valeurs. Les valeurs manquantes sont remplacées par 0.
         """
+        logger.debug(f"Pivoting DataFrame of interactions")
         interactions_pivot = interactions_reduce.pivot(
             index='user_id', columns='recipe_id', values='rate')
         interactions_pivot = interactions_pivot.fillna(0)
@@ -176,6 +184,8 @@ class User:
             DataFrame contenant les déviations absolues entre les préférences du nouvel utilisateur
             et celles des autres utilisateurs.
         """
+        logger.debug(
+            f"Calculating absolute deviation between user preferences and existing interactions")
         norm_order = 1
         interactions_abs = np.abs(
             interactions_pivot-recipes_rating)**norm_order
@@ -201,6 +211,8 @@ class User:
             Interactions filtrées des voisins proches pour des recettes non révisées
             par le nouvel utilisateur.
         """
+        logger.debug(
+            f"Selecting near neighbors based on distance and interactions")
         user_prox_id = interactions_pivot_input.sort_values(
             "dist").head(3).index
         interactions_prox = interactions[interactions['user_id'].isin(
@@ -224,6 +236,7 @@ class User:
         - Les fichiers doivent se trouver aux emplacements spécifiés ("data/data/PP_user_main_dishes.csv"
         et "data/PP_user_desserts").
         """
+        logger.debug(f"Loading datasets for main dishes and desserts")
         if not hasattr(cls, "_interactions_main") or not hasattr(cls, "_interactions_dessert"):
             cls._interactions_main = pd.read_csv(
                 "data/PP_user_main_dishes.csv", sep=',')
@@ -245,6 +258,8 @@ class User:
         ValueError:
             Si le type de plat est invalide.
         """
+        logger.debug(f"Displaying dataset information for type_of_dish={
+                     type_of_dish}")
         cls.validity_type_of_dish(
             type_of_dish)  # Vérifie si le type est valide
         if type_of_dish == "main":
@@ -265,6 +280,7 @@ class User:
         str:
             Type de plat ("main" ou "dessert").
         """
+        logger.debug(f"Getting type of dish for user")
         return self._type_of_dish
 
     @property
@@ -277,6 +293,7 @@ class User:
         dict:
             Dictionnaire contenant les IDs de recettes comme clés et les notes attribuées comme valeurs.
         """
+        logger.debug(f"Getting preferences for user")
         return self._preferences
 
     @property
@@ -289,6 +306,7 @@ class User:
         pd.DataFrame:
             Dataset des interactions pour les plats principaux.
         """
+        logger.debug(f"Getting interactions dataset for main dishes")
         return self._interactions_main
 
     @property
@@ -301,6 +319,7 @@ class User:
         pd.DataFrame:
             Dataset des interactions pour les desserts.
         """
+        logger.debug(f"Getting interactions dataset for desserts")
         return self._interactions_dessert
 
     # methods
@@ -318,13 +337,14 @@ class User:
         - Si aucune préférence n'existe pour le nouvel utilisateur, une recette aléatoire est suggérée.
         - La suggestion repose sur la similarité des utilisateurs voisins proches.
         """
+        logger.debug(f"Proposing a recipe suggestion for user")
         interactions = None
         if self._type_of_dish == "main":
             interactions = self.get_interactions_main
         elif self._type_of_dish == "dessert":
             interactions = self.get_interactions_dessert
         if len(self._preferences) == 0:
-            print('user new historic is empty')
+            logger.info('user new historic is empty')
             recipe_suggested = interactions["recipe_id"].sample(n=1).iloc[0]
         else:
             recipes_id = list(self._preferences.keys())
@@ -343,8 +363,11 @@ class User:
                 interactions_selection = interactions[~interactions['recipe_id'].isin(
                     recipes_id)]
                 if interactions_selection.empty:
+                    logger.info('No more recipes to suggest from the dataset')
                     raise ValueError('No more recipes to suggest.')
                 else:
+                    logger.info(
+                        'No more recipes to suggest from the user preferences, suggesting a random recipe')
                     recipe_suggested = interactions_selection["recipe_id"].sample(
                         n=1).iloc[0]
             else:
@@ -363,6 +386,8 @@ class User:
         rating : int
             Note attribuée à la recette.
         """
+        logger.debug(f"Adding a new preference for recipe {
+                     recipe_suggested} with rating {rating}")
         self._preferences[recipe_suggested] = rating
 
     def del_preferences(self, recipe_deleted) -> None:
@@ -379,8 +404,10 @@ class User:
         KeyError:
             Si l'ID de la recette à supprimer n'existe pas dans les préférences de l'utilisateur.
         """
+        logger.debug(f"Deleting preference for recipe {recipe_deleted}")
         if recipe_deleted in self._preferences:
             del self._preferences[recipe_deleted]
         else:
+            logger.info(f'Recipe ID {recipe_deleted} not in user preferences')
             raise KeyError(
                 f'The recipe ID {recipe_deleted} is not in the user preferences.')

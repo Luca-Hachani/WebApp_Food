@@ -6,14 +6,10 @@ import streamlit as st
 from webapp_food.utils import update_preferences, print_image, ImageError, fetch_recipe_details
 from webapp_food.user_fooder import User
 import pandas as pd
-
-# Session state initialization
-if not st.session_state:
-    st.session_state.raw_recipes = pd.read_csv(
-        'data/PP_recipes_data.csv', index_col=0)
+import logging
 
 # Page state variables
-LIKE = DISLIKE = MAIN = DESSERT = EXPLANATIONS = HISTORY = False
+EXPLANATIONS = HISTORY = False
 
 
 """
@@ -23,29 +19,33 @@ depending on the user's actions on the website
 if not st.session_state:
     st.session_state.raw_recipes = pd.read_csv(
         'data/PP_recipes_data.csv', index_col=0)
+    st.session_state.logger = logging.getLogger(__name__)
+    logging.basicConfig(filename='fooder.log', level=logging.INFO)
 
 if st.session_state.get("like"):
-    LIKE, MAIN, DESSERT = True, False, False
+    logging.debug("Like button clicked")
     update_preferences(st.session_state.user,
                        st.session_state.last_recommended_index, 1)
 
 if st.session_state.get("dislike"):
-    DISLIKE, MAIN, DESSERT = True, False, False
+    logging.debug("Dislike button clicked")
     update_preferences(st.session_state.user,
                        st.session_state.last_recommended_index, -1)
 
 if st.session_state.get("main"):
-    DESSERT, MAIN = False, True
+    logging.debug("Main button clicked")
     st.session_state.user = User('main')
 
 if st.session_state.get("dessert"):
-    MAIN, DESSERT = False, True
+    logging.debug("Dessert button clicked")
     st.session_state.user = User('dessert')
 
 if st.session_state.get("explanations"):
+    logging.debug("Explanations button clicked")
     EXPLANATIONS = True
 
 if st.session_state.get("retour"):
+    logging.debug("Retour button clicked")
     EXPLANATIONS = False
     if st.session_state.get("user"):
         if st.session_state.get("user").get_type_of_dish == 'main':
@@ -54,9 +54,9 @@ if st.session_state.get("retour"):
             DESSERT = True
 
 # Page management: handling of the different pages
-MAIN_PAGE = not (EXPLANATIONS) and not (MAIN or DESSERT or LIKE or DISLIKE)
+MAIN_PAGE = not (EXPLANATIONS) and not (st.session_state.get("user"))
 RECOMMENDATION_PAGE = not (EXPLANATIONS) and (
-    MAIN or DESSERT or LIKE or DISLIKE)
+    st.session_state.get("user"))
 
 # Page management: different styles for the website
 st.markdown(
