@@ -67,13 +67,21 @@ class User:
 
     get_preferences() -> dict
         Retourne le dictionnaire des préférences de l'utilisateur.
+    
+    get_interactions_main() -> pd.DataFrame
+        Retourne le dataset des interactions utilisateur-recette
+        pour les plats principaux.
+
+    def get_interactions_dessert() -> pd.DataFrame
+        Retourne le dataset des interactions utilisateur-recette
+        pour les desserts.
 
     recipe_suggestion() -> int
         Propose une recette basée sur les préférences de l'utilisateur et
         les interactions existantes.
         Si aucune préférence n'existe, une recette aléatoire est suggérée.
 
-    add_preferences(recipe_suggested: int, rating: float) -> None
+    add_preferences(recipe_suggested: int, rating: int) -> None
         Ajoute une préférence pour une recette donnée avec une note spécifique.
 
     del_preferences(recipe_deleted: int) -> None
@@ -93,7 +101,7 @@ class User:
     user = User(_type_of_dish="main")
 
     # Ajouter une préférence
-    user.add_preferences(recipe_suggested=123, rating=4.5)
+    user.add_preferences(recipe_suggested=123, rating= +1 ou-1)
 
     # Proposer une recette
     suggestion = user.recipe_suggestion()
@@ -136,7 +144,7 @@ class User:
 
     # static methods
     @staticmethod
-    def validity_type_of_dish(type_of_dish) -> None:
+    def validity_type_of_dish(type_of_dish : str) -> None:
         """
         Vérifie si le type de plat est valide.
 
@@ -158,7 +166,7 @@ class User:
                              type_of_dish}".')
 
     @staticmethod
-    def pivot_table_of_df(interactions_reduce) -> pd.DataFrame:
+    def pivot_table_of_df(interactions_reduce : pd.DataFrame) -> pd.DataFrame:
         """
         Transforme un DataFrame d'interactions utilisateur-recette
         en une table pivotée.
@@ -186,7 +194,7 @@ class User:
         return interactions_pivot
 
     @staticmethod
-    def abs_deviation(recipes_rating, interactions_pivot) -> pd.DataFrame:
+    def abs_deviation(recipes_rating : np.ndarray, interactions_pivot : pd.DataFrame) -> pd.DataFrame:
         """
         Calcule la déviation absolue entre les préférences du
         nouvel utilisateur pour une recette et les interactions existantes.
@@ -216,8 +224,8 @@ class User:
         return interactions_abs
 
     @staticmethod
-    def near_neighboor(recipes_id, interactions, interactions_pivot_input)\
-            -> pd.DataFrame:
+    def near_neighboor(recipes_id : list, interactions : pd.DataFrame,\
+        interactions_pivot_input : pd.DataFrame) -> pd.DataFrame:
         """
         Sélectionne les utilisateurs voisins proches basés sur
         la distance et leurs interactions.
@@ -386,7 +394,7 @@ class User:
                     interactions_selection.sum(axis=0).idxmax())
         return recipe_suggested
 
-    def add_preferences(self, recipe_suggested, rating) -> None:
+    def add_preferences(self, recipe_suggested : int, rating : int) -> None:
         """
         Ajoute une nouvelle préférence pour une recette spécifique.
 
@@ -401,7 +409,7 @@ class User:
                      recipe_suggested} with rating {rating}")
         self._preferences[recipe_suggested] = rating
 
-    def del_preferences(self, recipe_deleted) -> None:
+    def del_preferences(self, recipe_deleted : int) -> None:
         """
         Supprime une préférence associée à une recette donnée.
 
