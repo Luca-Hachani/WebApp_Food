@@ -253,7 +253,8 @@ class User:
         -----
         - CSV files are loaded only once at the class level.
         - Files must be located at the specified paths 
-        ("data/data/PP_user_main_dishes.csv" and "data/PP_user_desserts").
+          ("data/data/PP_user_main_dishes.csv" and "data/PP_user_desserts").
+        
         """
         logger.debug("Loading datasets for main dishes and desserts")
         if not hasattr(cls, "_interactions_main") or \
@@ -331,6 +332,7 @@ class User:
         -----
         - If the new user has no preferences, a random recipe is suggested.
         - The suggestion is based on the similarity of nearby users.
+
         """
         logger.debug("Proposing a recipe suggestion for user")
         interactions = None
