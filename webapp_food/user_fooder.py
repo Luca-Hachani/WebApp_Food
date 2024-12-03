@@ -445,7 +445,7 @@ class User:
         et les recettes.
 
         Chaque nœud est un utilisateur (vous-même ou vos voisins proches)
-        et chaque arête représente une recette ayant la même note 
+        et chaque arête représente une recette ayant la même note
         entre deux utilisateurs.
 
         Parameters
@@ -457,8 +457,7 @@ class User:
         Returns
         -------
         nx.MultiGraph
-            Graphe des interactions utilisateur, avec les nœuds pour les utilisateurs et 
-            les arêtes pour les interactions basées sur les recettes.
+            Graphe des interactions utilisateur.
 
         Raises
         ------
@@ -495,8 +494,8 @@ class User:
 
     def get_neighboor_data(self):
         """
-        Analyse les interactions entre l'utilisateur principal et ses voisins 
-        proches pour identifier les recettes aimées en commun, non aimées en 
+        Analyse les interactions entre l'utilisateur principal et ses voisins
+        proches pour identifier les recettes aimées en commun, non aimées en
         commun, et les recettes à recommander.
 
         Returns
@@ -510,9 +509,9 @@ class User:
         logger.debug("Getting neighboors data")
 
         liked = [recipe_id for recipe_id,
-                      rate in self._preferences.items() if rate == 1]
+                 rate in self._preferences.items() if rate == 1]
         disliked = [recipe_id for recipe_id,
-                      rate in self._preferences.items() if rate == -1]
+                    rate in self._preferences.items() if rate == -1]
         near_neighboor = self._near_neighboor
 
         if self.get_type_of_dish == "main":
@@ -521,10 +520,10 @@ class User:
             interactions = self.get_interactions_dessert
         interactions = interactions.loc[interactions['user_id'].isin(
             near_neighboor)]
-        
+
         common_likes = (interactions[liked] == 1).sum(axis=1)
         common_dislikes = (interactions[disliked]).sum(axis=1)
-        
+    
         remaining_recipes = interactions.drop(columns=liked)
         to_recommend = (remaining_recipes == 1).sum(axis=1)
 
@@ -535,4 +534,4 @@ class User:
         })
 
         return df
-        
+
