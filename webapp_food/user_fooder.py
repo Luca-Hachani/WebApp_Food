@@ -116,7 +116,7 @@ class User:
         """
         Executed after the class initialization.
 
-        Validates the dish type and loads interaction datasets for 
+        Validates the dish type and loads interaction datasets for
         main dishes and desserts.
 
         Raises
@@ -134,7 +134,7 @@ class User:
 
     # static methods
     @staticmethod
-    def validity_type_of_dish(type_of_dish : str) -> None:
+    def validity_type_of_dish(type_of_dish: str) -> None:
         """
         Validates the dish type.
 
@@ -156,7 +156,7 @@ class User:
                              type_of_dish}".')
 
     @staticmethod
-    def pivot_table_of_df(interactions_reduce : pd.DataFrame) -> pd.DataFrame:
+    def pivot_table_of_df(interactions_reduce: pd.DataFrame) -> pd.DataFrame:
         """
         Transforms a user-recipe interaction DataFrame into a pivot table.
 
@@ -181,8 +181,8 @@ class User:
         return interactions_pivot
 
     @staticmethod
-    def abs_deviation(recipes_rating : np.ndarray,
-                      interactions_pivot : pd.DataFrame) -> pd.DataFrame:
+    def abs_deviation(recipes_rating: np.ndarray,
+                      interactions_pivot: pd.DataFrame) -> pd.DataFrame:
         """
         Computes the absolute deviation between a new user's recipe preferences
         and existing interactions.
@@ -210,8 +210,8 @@ class User:
         return interactions_abs
 
     @staticmethod
-    def near_neighboor(recipes_id : list, interactions : pd.DataFrame,\
-        interactions_pivot_input : pd.DataFrame) -> pd.DataFrame:
+    def near_neighboor(recipes_id: list, interactions: pd.DataFrame,
+                       interactions_pivot_input: pd.DataFrame) -> pd.DataFrame:
         """
         Selects nearby users based on distances and their interactions.
 
@@ -252,9 +252,9 @@ class User:
         Notes
         -----
         - CSV files are loaded only once at the class level.
-        - Files must be located at the specified paths 
+        - Files must be located at the specified paths
           ("data/data/PP_user_main_dishes.csv" and "data/PP_user_desserts").
-        
+
         """
         logger.debug("Loading datasets for main dishes and desserts")
         if not hasattr(cls, "_interactions_main") or \
@@ -373,7 +373,7 @@ class User:
                     interactions_selection.sum(axis=0).idxmax())
         return recipe_suggested
 
-    def add_preferences(self, recipe_suggested : int, rating : int) -> None:
+    def add_preferences(self, recipe_suggested: int, rating: int) -> None:
         """
         Adds a new preference for a specific recipe.
 
@@ -388,7 +388,7 @@ class User:
                      recipe_suggested} with rating {rating}")
         self._preferences[recipe_suggested] = rating
 
-    def del_preferences(self, recipe_deleted : int) -> None:
+    def del_preferences(self, recipe_deleted: int) -> None:
         """
         Removes a preference associated with a specific recipe.
 
