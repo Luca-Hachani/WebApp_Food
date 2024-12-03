@@ -141,3 +141,26 @@ def test_recipe_suggestion(setup_user):
     user.add_preferences(recipe_suggested, 1)
     with pytest.raises(ValueError):
         recipe_suggested = user.recipe_suggestion()
+
+
+# Test `get_graph`
+
+
+def test_get_graph_no_neighbors(setup_user):
+    user = setup_user
+    user._near_neighboor = []  # Simulate missing neighboors
+    
+    with pytest.raises(uf.NoNeighboorError, match="No neighboor found"):
+        user.get_graph(1)
+
+
+def test_get_graph_no_recipes(setup_user):
+    user = setup_user
+    user.add_preferences(101, 1)
+    user._near_neighboor = []
+
+    graph = user.get_graph(1)
+
+    assert len(graph.nodes) == 2
+    assert len(graph.edges) == 1
+    assert ("you", 1) in graph.edges or (1, "you") in graph.edges

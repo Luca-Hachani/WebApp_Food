@@ -4,6 +4,7 @@ Module contenant la classe User pour la recommandation de recettes.
 # Importation des librairies
 from dataclasses import dataclass, field
 from itertools import combinations
+from utils import NoNeighboorError
 import numpy as np
 import pandas as pd
 import networkx as nx
@@ -340,7 +341,7 @@ class User:
         """
         logger.debug("Getting interactions dataset for desserts")
         return self._interactions_dessert
-    
+
     # methods
     def recipe_suggestion(self) -> int:
         """
@@ -440,11 +441,13 @@ class User:
     
     def get_graph(self, type: int) -> nx.MultiGraph:
         """
-        Génère un graphe d'interactions utilisateur basé sur les préférences et les recettes associées.
+        Génère un graphe d'interactions utilisateur basé sur les préférences et les
+        recettes associées.
 
-        Cette méthode construit un graphe multi-nœuds (MultiGraph) où chaque nœud représente un utilisateur 
-        (vous-même ou vos voisins proches) et chaque arête représente une interaction entre utilisateurs 
-        ayant évalué une même recette. Les interactions sont filtrées par le type de plat (plat principal 
+        Cette méthode construit un graphe multi-nœuds (MultiGraph) où chaque nœud 
+        représente un utilisateur (vous-même ou vos voisins proches) et chaque 
+        arête représente une interaction entre utilisateurs ayant évalué une même 
+        recette. Les interactions sont filtrées par le type de plat (plat principal 
         ou dessert) et par les préférences spécifiées.
 
         Parameters
@@ -457,8 +460,15 @@ class User:
         Returns
         -------
         nx.MultiGraph
-            Un graphe représentant les interactions utilisateur. Les nœuds correspondent aux utilisateurs,
-            et les arêtes relient les utilisateurs ayant interagi avec les mêmes recettes.
+            Un graphe représentant les interactions utilisateur. Les nœuds 
+            correspondent aux utilisateurs, et les arêtes relient les utilisateurs 
+            ayant interagi avec les mêmes recettes.
+
+        Raises
+        ------
+        NoNeighboorError
+            Si `self._near_neighboor` est vide, indiquant qu'aucun voisin n'est 
+            disponible pour créer le graphe.
         """
         logger.debug("Getting user network graph")
 
@@ -466,6 +476,10 @@ class User:
         recipe_ids = [recipe_id for recipe_id,
                       rate in self._preferences.items() if rate == type]
         near_neighboor = self._near_neighboor
+
+        if not near_neighboor:
+            logger.warning("No neighboor found")
+            raise NoNeighboorError("No neighboor found")
 
         graph = nx.MultiGraph()
         graph.add_node(user)
