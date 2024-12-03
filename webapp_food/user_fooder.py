@@ -4,7 +4,7 @@ Module contenant la classe User pour la recommandation de recettes.
 # Importation des librairies
 from dataclasses import dataclass, field
 from itertools import combinations
-from utils import NoNeighboorError
+from webapp_food.utils import NoNeighboorError
 import numpy as np
 import pandas as pd
 import networkx as nx
@@ -438,37 +438,32 @@ class User:
             raise KeyError(
                 f'The recipe ID {recipe_deleted}\
                 is not in the user preferences.')
-    
+
     def get_graph(self, type: int) -> nx.MultiGraph:
         """
-        Génère un graphe d'interactions utilisateur basé sur les préférences et les
-        recettes associées.
+        Génère un graphe d'interactions utilisateur basé sur les préférences
+        et les recettes.
 
-        Cette méthode construit un graphe multi-nœuds (MultiGraph) où chaque nœud 
-        représente un utilisateur (vous-même ou vos voisins proches) et chaque 
-        arête représente une interaction entre utilisateurs ayant évalué une même 
-        recette. Les interactions sont filtrées par le type de plat (plat principal 
-        ou dessert) et par les préférences spécifiées.
+        Chaque nœud est un utilisateur (vous-même ou vos voisins proches)
+        et chaque arête représente une recette ayant la même note 
+        entre deux utilisateurs.
 
         Parameters
         ----------
         type : int
-            Le type de préférence utilisé pour filtrer les recettes. Typiquement :
-            - `1` : pour les recettes aimées.
-            - `-1` : pour les recettes non aimées.
+            - `1` : Recettes aimées.
+            - `-1` : Recettes non aimées.
 
         Returns
         -------
         nx.MultiGraph
-            Un graphe représentant les interactions utilisateur. Les nœuds 
-            correspondent aux utilisateurs, et les arêtes relient les utilisateurs 
-            ayant interagi avec les mêmes recettes.
+            Graphe des interactions utilisateur, avec les nœuds pour les utilisateurs et 
+            les arêtes pour les interactions basées sur les recettes.
 
         Raises
         ------
         NoNeighboorError
-            Si `self._near_neighboor` est vide, indiquant qu'aucun voisin n'est 
-            disponible pour créer le graphe.
+            Si aucun voisin n'est disponible pour créer le graphe.
         """
         logger.debug("Getting user network graph")
 
@@ -497,3 +492,47 @@ class User:
             graph.add_edges_from(edges)
 
         return graph
+
+    def get_neighboor_data(self):
+        """
+        Analyse les interactions entre l'utilisateur principal et ses voisins 
+        proches pour identifier les recettes aimées en commun, non aimées en 
+        commun, et les recettes à recommander.
+
+        Returns
+        -------
+        pd.DataFrame
+            DataFrame avec les colonnes :
+            - "common_likes" : Nombre de recettes aimées en commun.
+            - "common_dislikes" : Nombre de recettes non aimées en commun.
+            - "recipes to recommend" : Nombre de recettes à recommander.
+        """
+        logger.debug("Getting neighboors data")
+
+        liked = [recipe_id for recipe_id,
+                      rate in self._preferences.items() if rate == 1]
+        disliked = [recipe_id for recipe_id,
+                      rate in self._preferences.items() if rate == -1]
+        near_neighboor = self._near_neighboor
+
+        if self.get_type_of_dish == "main":
+            interactions = self.get_interactions_main
+        elif self.get_type_of_dish == "dessert":
+            interactions = self.get_interactions_dessert
+        interactions = interactions.loc[interactions['user_id'].isin(
+            near_neighboor)]
+        
+        common_likes = (interactions[liked] == 1).sum(axis=1)
+        common_dislikes = (interactions[disliked]).sum(axis=1)
+        
+        remaining_recipes = interactions.drop(columns=liked)
+        to_recommend = (remaining_recipes == 1).sum(axis=1)
+
+        df = pd.DataFrame({
+            "common_likes": common_likes,
+            "common_dislikes": common_dislikes,
+            "recipes to recommend": to_recommend
+        })
+
+        return df
+        

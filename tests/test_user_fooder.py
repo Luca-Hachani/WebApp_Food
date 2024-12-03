@@ -164,3 +164,28 @@ def test_get_graph_no_recipes(setup_user):
     assert len(graph.nodes) == 2
     assert len(graph.edges) == 1
     assert ("you", 1) in graph.edges or (1, "you") in graph.edges
+
+
+# Test `get_neighboor_data`
+
+
+def test_common_likes(setup_user):
+    user = setup_user
+
+    user._preferences = {101: 1, 102: 1, 103: -1}
+    user._near_neighboor = [1, 2, 3]
+    
+    df = user.get_neighboor_data()
+    
+    assert df.loc[1, "common likes"] == 1
+    assert df.loc[1, "common dislikes"] == 0
+    assert df.loc[1, "recipes to recommend"] == 0
+
+    assert df.loc[2, "common likes"] == 1
+    assert df.loc[2, "common dislikes"] == 0
+    assert df.loc[2, "recipes to recommend"] == 0
+
+    assert df.loc[3, "common likes"] == 0
+    assert df.loc[3, "common dislikes"] == 1
+    assert df.loc[3, "recipes to recommend"] == 0
+
