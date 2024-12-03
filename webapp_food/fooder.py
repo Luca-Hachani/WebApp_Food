@@ -13,11 +13,12 @@ from webapp_food.settings import COLORS, LIKE, DISLIKE
 
 # Page configuration
 st.set_page_config(
-    page_title="fooder", page_icon="img/fooder_logo2.png", initial_sidebar_state="collapsed"
+    page_title="fooder", page_icon="img/fooder_logo2.png",
+    initial_sidebar_state="collapsed"
 )
 
 # Page state variables
-GRAPH = HISTORY = False
+GRAPH_VIZ = HISTORY = False
 
 """
 Page management: handling of the different variables
@@ -49,22 +50,22 @@ if st.session_state.get("dessert"):
 
 if st.session_state.get("graph"):
     logging.debug("Graph button clicked")
-    GRAPH = True
-    st.session_state.graph = LIKE
+    GRAPH_VIZ = True
+    st.session_state.graph_type = LIKE
 
 if st.session_state.get("dislike_graph"):
     logging.debug("Dislike graph button clicked")
-    st.session_state.graph = DISLIKE
-    GRAPH = True
+    st.session_state.graph_type = DISLIKE
+    GRAPH_VIZ = True
 
 if st.session_state.get("like_graph"):
     logging.debug("Like graph button clicked")
-    st.session_state.graph = LIKE
-    GRAPH = True
+    st.session_state.graph_type = LIKE
+    GRAPH_VIZ = True
 
 if st.session_state.get("back"):
     logging.debug("Back button clicked")
-    GRAPH = False
+    GRAPH_VIZ = False
     if st.session_state.get("user"):
         if st.session_state.get("user").get_type_of_dish == 'main':
             MAIN = True
@@ -72,8 +73,8 @@ if st.session_state.get("back"):
             DESSERT = True
 
 # Page management: handling of the different pages
-MAIN_PAGE = not (GRAPH) and not (st.session_state.get("user"))
-RECOMMENDATION_PAGE = not (GRAPH) and (
+MAIN_PAGE = not (GRAPH_VIZ) and not (st.session_state.get("user"))
+RECOMMENDATION_PAGE = not (GRAPH_VIZ) and (
     st.session_state.get("user"))
 
 # Page management: different styles for the website
@@ -141,7 +142,7 @@ if RECOMMENDATION_PAGE or MAIN_PAGE:
         "Click here to show  \nyour user adjency graph", key="graph",
         help="Explain website's algorithm and dataset used")
 # Management of History
-if st.session_state.get("user") and not GRAPH:
+if st.session_state.get("user") and not GRAPH_VIZ:
     st.sidebar.write("History of your preferences:")
     for (key, preference_value) in reversed(
             st.session_state.user.get_preferences.items()):
@@ -209,7 +210,7 @@ if RECOMMENDATION_PAGE:
         unsafe_allow_html=True,
     )
 # Change of type of dish: all pages but explanation page
-if not GRAPH:
+if not GRAPH_VIZ:
     col1, col2 = st.columns(2)
     col1.button("Main Dish", key="main")
     col2.button("Dessert", key="dessert")
@@ -224,8 +225,9 @@ else:
     )
     st.sidebar.button("Back", key="back")
     col1, col2 = st.columns([4, 2], gap="small")
-    graph = st.session_state.user.get_graph(st.session_state.graph)
-    visualize_graph(graph)
+    graph_to_plot = st.session_state.user.get_graph(
+        st.session_state.graph_type)
+    visualize_graph(graph_to_plot)
     with open("webapp_food/graphs/neighbour.html", "r", encoding="utf-8") as f:
         html_content = f.read()
     with col1:
