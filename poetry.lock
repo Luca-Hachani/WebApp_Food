@@ -1168,6 +1168,24 @@ files = [
 dev = ["build (==1.2.2.post1)", "coverage (==7.5.3)", "mypy (==1.13.0)", "pip (==24.3.1)", "pylint (==3.2.3)", "ruff (==0.7.3)", "twine (==5.1.1)", "uv (==0.5.1)"]
 
 [[package]]
+name = "jsonpickle"
+version = "4.0.0"
+description = "jsonpickle encodes/decodes any Python object to/from JSON"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "jsonpickle-4.0.0-py3-none-any.whl", hash = "sha256:53730b9e094bc41f540bfdd25eaf6e6cf43811590e9e1477abcec44b866ddcd9"},
+    {file = "jsonpickle-4.0.0.tar.gz", hash = "sha256:fc670852b204d77601b08f8f9333149ac37ab6d3fe4e6ed3b578427291f63736"},
+]
+
+[package.extras]
+cov = ["pytest-cov"]
+dev = ["black", "pyupgrade"]
+docs = ["furo", "rst.linker (>=1.9)", "sphinx (>=3.5)"]
+packaging = ["build", "setuptools (>=61.2)", "setuptools-scm[toml] (>=6.0)", "twine"]
+testing = ["PyYAML", "atheris (>=2.3.0,<2.4.0)", "bson", "ecdsa", "feedparser", "gmpy2", "numpy", "pandas", "pymongo", "pytest (>=6.0,!=8.1.*)", "pytest-benchmark", "pytest-benchmark[histogram]", "pytest-checkdocs (>=1.2.3)", "pytest-enabler (>=1.0.1)", "pytest-ruff (>=0.2.1)", "scikit-learn", "scipy", "scipy (>=1.9.3)", "simplejson", "sqlalchemy", "ujson"]
+
+[[package]]
 name = "jsonpointer"
 version = "3.0.0"
 description = "Identify specific nodes in a JSON document (RFC 6901)"
@@ -2118,6 +2136,25 @@ files = [
 ]
 
 [[package]]
+name = "networkx"
+version = "3.4.2"
+description = "Python package for creating and manipulating graphs and networks"
+optional = false
+python-versions = ">=3.10"
+files = [
+    {file = "networkx-3.4.2-py3-none-any.whl", hash = "sha256:df5d4365b724cf81b8c6a7312509d0c22386097011ad1abe274afd5e9d3bbc5f"},
+    {file = "networkx-3.4.2.tar.gz", hash = "sha256:307c3669428c5362aab27c8a1260aa8f47c4e91d3891f48be0141738d8d053e1"},
+]
+
+[package.extras]
+default = ["matplotlib (>=3.7)", "numpy (>=1.24)", "pandas (>=2.0)", "scipy (>=1.10,!=1.11.0,!=1.11.1)"]
+developer = ["changelist (==0.5)", "mypy (>=1.1)", "pre-commit (>=3.2)", "rtoml"]
+doc = ["intersphinx-registry", "myst-nb (>=1.1)", "numpydoc (>=1.8.0)", "pillow (>=9.4)", "pydata-sphinx-theme (>=0.15)", "sphinx (>=7.3)", "sphinx-gallery (>=0.16)", "texext (>=0.6.7)"]
+example = ["cairocffi (>=1.7)", "contextily (>=1.6)", "igraph (>=0.11)", "momepy (>=0.7.2)", "osmnx (>=1.9)", "scikit-learn (>=1.5)", "seaborn (>=0.13)"]
+extra = ["lxml (>=4.6)", "pydot (>=3.0.1)", "pygraphviz (>=1.14)", "sympy (>=1.10)"]
+test = ["pytest (>=7.2)", "pytest-cov (>=4.0)"]
+
+[[package]]
 name = "notebook"
 version = "7.0.7"
 description = "Jupyter Notebook - A web-based notebook environment for interactive computing"
@@ -2830,6 +2867,22 @@ files = [
     {file = "pytz-2024.2-py2.py3-none-any.whl", hash = "sha256:31c7c1817eb7fae7ca4b8c7ee50c72f93aa2dd863de768e1ef4245d426aa0725"},
     {file = "pytz-2024.2.tar.gz", hash = "sha256:2aa355083c50a0f93fa581709deac0c9ad65cca8a9e9beac660adcbd493c798a"},
 ]
+
+[[package]]
+name = "pyvis"
+version = "0.3.2"
+description = "A Python network graph visualization library"
+optional = false
+python-versions = ">3.6"
+files = [
+    {file = "pyvis-0.3.2-py3-none-any.whl", hash = "sha256:5720c4ca8161dc5d9ab352015723abb7a8bb8fb443edeb07f7a322db34a97555"},
+]
+
+[package.dependencies]
+ipython = ">=5.3.0"
+jinja2 = ">=2.9.6"
+jsonpickle = ">=1.4.1"
+networkx = ">=1.11"
 
 [[package]]
 name = "pywin32"
@@ -3828,4 +3881,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "65808917d7f976bc4c1ab9aa7e7289b1b200c0d4dfb3c648258b4c08b257ceaf"
+content-hash = "0b65ead0a7dbbd2bc0c9c23458e61f8e95f71036e25b6ed2f552bd06d8a5185e"

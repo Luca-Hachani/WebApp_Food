@@ -1,18 +1,23 @@
 """ Main file of the web application.
 It allows the user to choose between a main dish or a dessert,
 to like or dislike the recipes proposed and
-to see the explanations of the website.
+to see the graph of adjency for the current user.
 The user can also see the recommended recipes and their details."""
 import streamlit as st
 from webapp_food.utils import update_preferences, print_image, \
-    ImageError, fetch_recipe_details
+    ImageError, fetch_recipe_details, visualize_graph
 from webapp_food.user_fooder import User
 import pandas as pd
 import logging
+from webapp_food.settings import COLORS, LIKE, DISLIKE
+
+# Page configuration
+st.set_page_config(
+    page_title="fooder", page_icon="img/fooder_logo2.png", initial_sidebar_state="collapsed"
+)
 
 # Page state variables
-EXPLANATIONS = HISTORY = False
-
+GRAPH = HISTORY = False
 
 """
 Page management: handling of the different variables
@@ -27,12 +32,12 @@ if not st.session_state:
 if st.session_state.get("like"):
     logging.debug("Like button clicked")
     update_preferences(st.session_state.user,
-                       st.session_state.last_recommended_index, 1)
+                       st.session_state.last_recommended_index, LIKE)
 
 if st.session_state.get("dislike"):
     logging.debug("Dislike button clicked")
     update_preferences(st.session_state.user,
-                       st.session_state.last_recommended_index, -1)
+                       st.session_state.last_recommended_index, DISLIKE)
 
 if st.session_state.get("main"):
     logging.debug("Main button clicked")
@@ -42,13 +47,24 @@ if st.session_state.get("dessert"):
     logging.debug("Dessert button clicked")
     st.session_state.user = User('dessert')
 
-if st.session_state.get("explanations"):
-    logging.debug("Explanations button clicked")
-    EXPLANATIONS = True
+if st.session_state.get("graph"):
+    logging.debug("Graph button clicked")
+    GRAPH = True
+    st.session_state.graph = LIKE
 
-if st.session_state.get("retour"):
-    logging.debug("Retour button clicked")
-    EXPLANATIONS = False
+if st.session_state.get("dislike_graph"):
+    logging.debug("Dislike graph button clicked")
+    st.session_state.graph = DISLIKE
+    GRAPH = True
+
+if st.session_state.get("like_graph"):
+    logging.debug("Like graph button clicked")
+    st.session_state.graph = LIKE
+    GRAPH = True
+
+if st.session_state.get("back"):
+    logging.debug("Back button clicked")
+    GRAPH = False
     if st.session_state.get("user"):
         if st.session_state.get("user").get_type_of_dish == 'main':
             MAIN = True
@@ -56,11 +72,12 @@ if st.session_state.get("retour"):
             DESSERT = True
 
 # Page management: handling of the different pages
-MAIN_PAGE = not (EXPLANATIONS) and not (st.session_state.get("user"))
-RECOMMENDATION_PAGE = not (EXPLANATIONS) and (
+MAIN_PAGE = not (GRAPH) and not (st.session_state.get("user"))
+RECOMMENDATION_PAGE = not (GRAPH) and (
     st.session_state.get("user"))
 
 # Page management: different styles for the website
+# removing padding
 st.markdown(
     """
     <style>
@@ -74,24 +91,27 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+# title style
 st.markdown(
-    """
+    f"""
     <style>
-    h1 {
+    h1 {{
         text-align: center;
-        color: pink;
+        color: {COLORS['first_color']};
         height: 150px;
-    }
+    }}
     </style>
     """,
     unsafe_allow_html=True,
 )
+# button style
 st.markdown(
     """
         <style>
         div.stButton {
             display: flex;
             justify-content: center;
+            color: COLORS['second_color'];
         }
         div.stButton > button {
             padding: 20px 40px;
@@ -118,10 +138,10 @@ if MAIN_PAGE:
 # Management of the sidebar
 if RECOMMENDATION_PAGE or MAIN_PAGE:
     st.sidebar.button(
-        "Explanations on the website", key="explanations",
+        "Click here to show  \nyour user adjency graph", key="graph",
         help="Explain website's algorithm and dataset used")
 # Management of History
-if st.session_state.get("user") and not EXPLANATIONS:
+if st.session_state.get("user") and not GRAPH:
     st.sidebar.write("History of your preferences:")
     for (key, preference_value) in reversed(
             st.session_state.user.get_preferences.items()):
@@ -189,17 +209,41 @@ if RECOMMENDATION_PAGE:
         unsafe_allow_html=True,
     )
 # Change of type of dish: all pages but explanation page
-if not EXPLANATIONS:
+if not GRAPH:
     col1, col2 = st.columns(2)
     col1.button("Main Dish", key="main")
     col2.button("Dessert", key="dessert")
-# Page display: explanations page
+# Page display: graph page
 else:
     st.write(
         """
-        Fooder est un site de recommandation de recettes de cuisine.
-        Vous pouvez aimer ou ne pas aimer les recettes qui vous
-        sont proposées pour affiner les recommandations suivantes.
+        Fooder is a food recommendation website.
+        You can like or dislike the recipes proposed to you
+        to update the next food recommendation.
         """
     )
-    st.sidebar.button("Retour", key="retour")
+    st.sidebar.button("Back", key="back")
+    col1, col2 = st.columns([4, 2], gap="small")
+    graph = st.session_state.user.get_graph(st.session_state.graph)
+    visualize_graph(graph)
+    with open("webapp_food/graphs/neighbour.html", "r", encoding="utf-8") as f:
+        html_content = f.read()
+    with col1:
+        st.components.v1.html(html_content, height=500)
+        col11, col12 = st.columns(2)
+        col11.button('Graph of Likes neighboors', key='like_graph')
+        col12.button('Graph of Dislikes neighboors', key='dislike_graph')
+    with col2:
+        st.write(
+            """
+            <div style="text-align: center;">
+                <br><br><br><br>
+                The graph shows the relationships between you and other users.
+                <br><br>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+# At the end of the page, put the logo centered
+col1, col2, col3, col4, col5 = st.columns(5)
+col3.image("img/fooder_logo2.png", use_container_width=True)

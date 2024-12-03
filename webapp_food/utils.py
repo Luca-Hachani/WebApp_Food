@@ -5,6 +5,7 @@ import re
 import requests
 from bs4 import BeautifulSoup
 import logging
+from pyvis.network import Network
 
 # use the requests library to search for images on Google
 logger = logging.getLogger(__name__)
@@ -65,3 +66,23 @@ def fetch_recipe_details(recipes_df, recipe_index):
     steps = literal_eval(recipe['steps'])
     ingredients = literal_eval(recipe['ingredients'])
     return steps, ingredients
+
+
+def visualize_graph(graph):
+    """
+    Saves a NetworkX graph using PyVis.
+
+    Parameters:
+    - graph: The NetworkX graph to save.
+    """
+    logger.debug(f"Visualizing graph with {len(graph.nodes)} \
+                 nodes and {len(graph.edges)} edges")
+    # Create a PyVis Network object
+    net = Network(notebook=True, width="100%",
+                  height="600px", cdn_resources='remote')
+
+    # Convert NetworkX graph to PyVis
+    net.from_nx(graph)
+
+    # Save the graph as an HTML file
+    net.save_graph("webapp_food/graphs/neighbour.html")
