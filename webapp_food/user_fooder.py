@@ -3,8 +3,10 @@ Module contenant la classe User pour la recommandation de recettes.
 """
 # Importation des librairies
 from dataclasses import dataclass, field
+from itertools import combinations
 import numpy as np
 import pandas as pd
+import networkx as nx
 import logging
 
 logger = logging.getLogger(__name__)
@@ -116,6 +118,8 @@ class User:
     _interactions_main: pd.DataFrame = field(
         init=False, repr=False)  # Chargé au runtime
     _interactions_dessert: pd.DataFrame = field(
+        init=False, repr=False)  # Chargé au runtime
+    _near_neighboor: pd.DataFrame = field(
         init=False, repr=False)  # Chargé au runtime
 
     # post initialisation
@@ -336,7 +340,7 @@ class User:
         """
         logger.debug("Getting interactions dataset for desserts")
         return self._interactions_dessert
-
+    
     # methods
     def recipe_suggestion(self) -> int:
         """
@@ -376,6 +380,7 @@ class User:
             interactions_pivot["dist"] = interactions_abs.sum(axis=1)
             interactions_selection = self.near_neighboor(
                 recipes_id, interactions, interactions_pivot)
+            self._near_neighboor = interactions_selection.index
             if interactions_selection.empty:
                 # drop recipes already in preferences
                 interactions_selection = interactions[
@@ -432,3 +437,49 @@ class User:
             raise KeyError(
                 f'The recipe ID {recipe_deleted}\
                 is not in the user preferences.')
+    
+    def get_graph(self, type: int) -> nx.MultiGraph:
+        """
+        Génère un graphe d'interactions utilisateur basé sur les préférences et les recettes associées.
+
+        Cette méthode construit un graphe multi-nœuds (MultiGraph) où chaque nœud représente un utilisateur 
+        (vous-même ou vos voisins proches) et chaque arête représente une interaction entre utilisateurs 
+        ayant évalué une même recette. Les interactions sont filtrées par le type de plat (plat principal 
+        ou dessert) et par les préférences spécifiées.
+
+        Parameters
+        ----------
+        type : int
+            Le type de préférence utilisé pour filtrer les recettes. Typiquement :
+            - `1` : pour les recettes aimées.
+            - `-1` : pour les recettes non aimées.
+
+        Returns
+        -------
+        nx.MultiGraph
+            Un graphe représentant les interactions utilisateur. Les nœuds correspondent aux utilisateurs,
+            et les arêtes relient les utilisateurs ayant interagi avec les mêmes recettes.
+        """
+        logger.debug("Getting user network graph")
+
+        user = "you"
+        recipe_ids = [recipe_id for recipe_id,
+                      rate in self._preferences.items() if rate == type]
+        near_neighboor = self._near_neighboor
+
+        graph = nx.MultiGraph()
+        graph.add_node(user)
+        graph.add_nodes_from(near_neighboor)
+        if self.get_type_of_dish == "main":
+            interactions = self.get_interactions_main
+        elif self.get_type_of_dish == "dessert":
+            interactions = self.get_interactions_dessert
+        interactions = interactions.loc[interactions['user_id'].isin(
+            near_neighboor)]
+        for recipe in recipe_ids:
+            neighboor_to_edges = interactions[interactions['recipe_id']
+                                              == recipe]['user_id']
+            edges = list(combinations(neighboor_to_edges + user, 2))
+            graph.add_edges_from(edges)
+
+        return graph
