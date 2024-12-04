@@ -19,6 +19,17 @@ Contents
 
    modules
 
+How Algorithm Works
+-------------------
+
+This section explains the inner workings of the key algorithms in the project.
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Algorithm Details:
+
+   algo_recipe_suggestion
+
 Indices and tables:
 -------------------
 

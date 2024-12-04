@@ -2,10 +2,12 @@
 <html class="no-js" lang="en" data-content_root="./">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="#" /><link rel="search" title="Search" href="search.html" />
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="prev" title="webapp_food package" href="webapp_food.html" />
 
-    <!-- Generated with Sphinx 8.1.3 and Furo 2024.08.06 --><title>Index - Fooder 1.0.0 documentation</title>
-<link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
+    <!-- Generated with Sphinx 8.1.3 and Furo 2024.08.06 -->
+        <title>Explanation of Recipe Suggestion - Fooder 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=302659d7" />
     
@@ -176,7 +178,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
@@ -207,8 +209,8 @@
 </li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Algorithm Details:</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="algo_recipe_suggestion.html">Explanation of Recipe Suggestion</a></li>
+<ul class="current">
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Explanation of Recipe Suggestion</a></li>
 </ul>
 
 </div>
@@ -228,7 +230,13 @@
           <span>Back to top</span>
         </a>
         <div class="content-icon-container">
-          <div class="theme-toggle-container theme-toggle-content">
+          <div class="view-this-page">
+  <a class="muted-link" href="_sources/algo_recipe_suggestion.rst.txt" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
             <button class="theme-toggle">
               <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
               <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
@@ -237,217 +245,270 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <div class="visually-hidden">Toggle table of contents sidebar</div>
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          
-<section class="genindex-section">
-  <h1 id="index">Index</h1>
-  <div class="genindex-jumpbox"><a href="#_"><strong>_</strong></a> | <a href="#A"><strong>A</strong></a> | <a href="#D"><strong>D</strong></a> | <a href="#F"><strong>F</strong></a> | <a href="#G"><strong>G</strong></a> | <a href="#I"><strong>I</strong></a> | <a href="#L"><strong>L</strong></a> | <a href="#M"><strong>M</strong></a> | <a href="#N"><strong>N</strong></a> | <a href="#P"><strong>P</strong></a> | <a href="#R"><strong>R</strong></a> | <a href="#S"><strong>S</strong></a> | <a href="#U"><strong>U</strong></a> | <a href="#V"><strong>V</strong></a> | <a href="#W"><strong>W</strong></a></div>
+          <section id="explanation-of-recipe-suggestion">
+<h1>Explanation of Recipe Suggestion<a class="headerlink" href="#explanation-of-recipe-suggestion" title="Link to this heading">¶</a></h1>
+<section id="example-context">
+<h2>Example Context<a class="headerlink" href="#example-context" title="Link to this heading">¶</a></h2>
+<p><strong>User X</strong> has rated 2 recipes:</p>
+<ul class="simple">
+<li><p>Recipe 1: <code class="docutils literal notranslate"><span class="pre">+1</span></code></p></li>
+<li><p>Recipe 2: <code class="docutils literal notranslate"><span class="pre">-1</span></code></p></li>
+</ul>
+<p>The interaction data includes several recipes not yet rated by <strong>User X</strong>: <code class="docutils literal notranslate"><span class="pre">[3,</span> <span class="pre">4,</span> <span class="pre">5,</span> <span class="pre">6]</span></code>.</p>
+<p>A new user, <strong>User X’</strong>, is added and rates the recipes <code class="docutils literal notranslate"><span class="pre">[1,</span> <span class="pre">2]</span></code> with the same ratings as <strong>User X</strong>.</p>
+<p>Interactions of other users:</p>
+<div class="table-wrapper docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>user_id</p></th>
+<th class="head"><p>recipe_id</p></th>
+<th class="head"><p>rating</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>1</p></td>
+<td><p>+1</p></td>
+</tr>
+<tr class="row-odd"><td><p>1</p></td>
+<td><p>2</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>4</p></td>
+<td><p>+1</p></td>
+</tr>
+<tr class="row-odd"><td><p>1</p></td>
+<td><p>5</p></td>
+<td><p>+1</p></td>
+</tr>
+<tr class="row-even"><td><p>2</p></td>
+<td><p>1</p></td>
+<td><p>-1</p></td>
+</tr>
+<tr class="row-odd"><td><p>2</p></td>
+<td><p>3</p></td>
+<td><p>+1</p></td>
+</tr>
+<tr class="row-even"><td><p>2</p></td>
+<td><p>4</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-odd"><td><p>2</p></td>
+<td><p>6</p></td>
+<td><p>-1</p></td>
+</tr>
+<tr class="row-even"><td><p>3</p></td>
+<td><p>2</p></td>
+<td><p>-1</p></td>
+</tr>
+<tr class="row-odd"><td><p>3</p></td>
+<td><p>3</p></td>
+<td><p>+1</p></td>
+</tr>
+<tr class="row-even"><td><p>3</p></td>
+<td><p>5</p></td>
+<td><p>+1</p></td>
+</tr>
+<tr class="row-odd"><td><p>X’</p></td>
+<td><p>1</p></td>
+<td><p>+1</p></td>
+</tr>
+<tr class="row-even"><td><p>X’</p></td>
+<td><p>2</p></td>
+<td><p>-1</p></td>
+</tr>
+</tbody>
+</table>
+</div>
 </section>
-<section id="_" class="genindex-section">
-  <h2>_</h2>
-  <table style="width: 100%" class="indextable genindextable"><tr>
-    <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="webapp_food.html#webapp_food.user_fooder.User.__post_init__">__post_init__() (webapp_food.user_fooder.User method)</a>
-</li>
-    </ul></td>
-  </tr></table>
+<section id="algorithm-steps">
+<h2>Algorithm Steps<a class="headerlink" href="#algorithm-steps" title="Link to this heading">¶</a></h2>
+<p><strong>Step 1: Preferences of User X</strong></p>
+<p><strong>User X</strong> has rated the following recipes:</p>
+<ul class="simple">
+<li><p>Recipe 1: <code class="docutils literal notranslate"><span class="pre">+1</span></code></p></li>
+<li><p>Recipe 2: <code class="docutils literal notranslate"><span class="pre">-1</span></code></p></li>
+</ul>
+<p>This means that <strong>User X</strong> has not yet rated recipes <code class="docutils literal notranslate"><span class="pre">[3,</span> <span class="pre">4,</span> <span class="pre">5,</span> <span class="pre">6]</span></code>.</p>
+<p><strong>Step 2: Pivot Table</strong></p>
+<p>We filter the interactions of other users to keep only recipes <code class="docutils literal notranslate"><span class="pre">[1,</span> <span class="pre">2]</span></code> (those already rated by <strong>User X</strong>). Then, we build a pivot table.</p>
+<p>Filtered data:</p>
+<div class="table-wrapper docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>user_id</p></th>
+<th class="head"><p>recipe_id</p></th>
+<th class="head"><p>rating</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>1</p></td>
+<td><p>+1</p></td>
+</tr>
+<tr class="row-odd"><td><p>1</p></td>
+<td><p>2</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-even"><td><p>2</p></td>
+<td><p>1</p></td>
+<td><p>-1</p></td>
+</tr>
+<tr class="row-odd"><td><p>3</p></td>
+<td><p>2</p></td>
+<td><p>-1</p></td>
+</tr>
+<tr class="row-even"><td><p>X’</p></td>
+<td><p>1</p></td>
+<td><p>+1</p></td>
+</tr>
+<tr class="row-odd"><td><p>X’</p></td>
+<td><p>2</p></td>
+<td><p>-1</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Pivot Table:</p>
+<div class="table-wrapper docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>user_id</p></th>
+<th class="head"><p>Recipe 1</p></th>
+<th class="head"><p>Recipe 2</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>+1</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-odd"><td><p>2</p></td>
+<td><p>-1</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-even"><td><p>3</p></td>
+<td><p>0</p></td>
+<td><p>-1</p></td>
+</tr>
+<tr class="row-odd"><td><p>X’</p></td>
+<td><p>+1</p></td>
+<td><p>-1</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Step 3: Absolute Deviation Calculation</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">abs_deviation</span></code> method is used to compute the absolute deviation between <strong>User X</strong>’s preferences (<code class="docutils literal notranslate"><span class="pre">[+1,</span> <span class="pre">-1]</span></code>) and other users’ ratings.</p>
+<p>User Preferences:</p>
+<ul class="simple">
+<li><p>Recipe 1: <code class="docutils literal notranslate"><span class="pre">+1</span></code></p></li>
+<li><p>Recipe 2: <code class="docutils literal notranslate"><span class="pre">-1</span></code></p></li>
+</ul>
+<p>Distance Calculation:</p>
+<div class="table-wrapper docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>user_id</p></th>
+<th class="head"><p>Recipe 1</p></th>
+<th class="head"><p>Recipe 2</p></th>
+<th class="head"><p>Total Distance</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>0</p></td>
+<td><p>1</p></td>
+<td><p>1</p></td>
+</tr>
+<tr class="row-odd"><td><p>2</p></td>
+<td><p>2</p></td>
+<td><p>1</p></td>
+<td><p>3</p></td>
+</tr>
+<tr class="row-even"><td><p>3</p></td>
+<td><p>1</p></td>
+<td><p>0</p></td>
+<td><p>1</p></td>
+</tr>
+<tr class="row-odd"><td><p>X’</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The closest users (those with the smallest distances) are <strong>User 1</strong>, <strong>User 3</strong>, and <strong>User X’</strong>. However, <strong>User X’</strong> will be excluded because they have not rated recipes that <strong>User X</strong> has not yet rated.</p>
+<p><strong>Step 4: Identification of Close Neighbors</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">near_neighboor</span></code> method filters the interactions of close users to keep only recipes not yet rated by <strong>User X</strong> (<code class="docutils literal notranslate"><span class="pre">[3,</span> <span class="pre">4,</span> <span class="pre">5,</span> <span class="pre">6]</span></code>).</p>
+<p>Data of close neighbors:</p>
+<div class="table-wrapper docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>user_id</p></th>
+<th class="head"><p>recipe_id</p></th>
+<th class="head"><p>rating</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>4</p></td>
+<td><p>+1</p></td>
+</tr>
+<tr class="row-odd"><td><p>1</p></td>
+<td><p>5</p></td>
+<td><p>+1</p></td>
+</tr>
+<tr class="row-even"><td><p>3</p></td>
+<td><p>3</p></td>
+<td><p>+1</p></td>
+</tr>
+<tr class="row-odd"><td><p>3</p></td>
+<td><p>5</p></td>
+<td><p>+1</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Note: <strong>User X’</strong> interactions are excluded because they have not rated any new recipes.</p>
+<p><strong>Step 5: Suggesting a Recipe</strong></p>
+<p>We aggregate the evaluations of neighbors for the remaining recipes (<code class="docutils literal notranslate"><span class="pre">[3,</span> <span class="pre">4,</span> <span class="pre">5,</span> <span class="pre">6]</span></code>) and select the one with the highest score.</p>
+<p>Recipe Scores:</p>
+<div class="table-wrapper docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Recipe</p></th>
+<th class="head"><p>Total Score</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>3</p></td>
+<td><p>+1 (User 3)</p></td>
+</tr>
+<tr class="row-odd"><td><p>4</p></td>
+<td><p>+1 (User 1)</p></td>
+</tr>
+<tr class="row-even"><td><p>5</p></td>
+<td><p>+1 (User 1) + +1 (User 3) = +2</p></td>
+</tr>
+<tr class="row-odd"><td><p>6</p></td>
+<td><p>0</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Suggested Recipe:</strong></p>
+<p>Recipe 5 is suggested because it has the highest score.</p>
 </section>
-
-<section id="A" class="genindex-section">
-  <h2>A</h2>
-  <table style="width: 100%" class="indextable genindextable"><tr>
-    <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="webapp_food.html#webapp_food.user_fooder.User.abs_deviation">abs_deviation() (webapp_food.user_fooder.User static method)</a>
-</li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="webapp_food.html#webapp_food.user_fooder.User.add_preferences">add_preferences() (webapp_food.user_fooder.User method)</a>
-</li>
-    </ul></td>
-  </tr></table>
 </section>
-
-<section id="D" class="genindex-section">
-  <h2>D</h2>
-  <table style="width: 100%" class="indextable genindextable"><tr>
-    <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="webapp_food.html#webapp_food.user_fooder.User.del_preferences">del_preferences() (webapp_food.user_fooder.User method)</a>
-</li>
-    </ul></td>
-  </tr></table>
-</section>
-
-<section id="F" class="genindex-section">
-  <h2>F</h2>
-  <table style="width: 100%" class="indextable genindextable"><tr>
-    <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="webapp_food.html#webapp_food.utils.fetch_recipe_details">fetch_recipe_details() (in module webapp_food.utils)</a>
-</li>
-    </ul></td>
-  </tr></table>
-</section>
-
-<section id="G" class="genindex-section">
-  <h2>G</h2>
-  <table style="width: 100%" class="indextable genindextable"><tr>
-    <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="webapp_food.html#webapp_food.user_fooder.User.get_interactions_dessert">get_interactions_dessert (webapp_food.user_fooder.User property)</a>
-</li>
-        <li><a href="webapp_food.html#webapp_food.user_fooder.User.get_interactions_main">get_interactions_main (webapp_food.user_fooder.User property)</a>
-</li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="webapp_food.html#webapp_food.user_fooder.User.get_preferences">get_preferences (webapp_food.user_fooder.User property)</a>
-</li>
-        <li><a href="webapp_food.html#webapp_food.user_fooder.User.get_type_of_dish">get_type_of_dish (webapp_food.user_fooder.User property)</a>
-</li>
-    </ul></td>
-  </tr></table>
-</section>
-
-<section id="I" class="genindex-section">
-  <h2>I</h2>
-  <table style="width: 100%" class="indextable genindextable"><tr>
-    <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="webapp_food.html#webapp_food.utils.ImageError">ImageError</a>
-</li>
-    </ul></td>
-  </tr></table>
-</section>
-
-<section id="L" class="genindex-section">
-  <h2>L</h2>
-  <table style="width: 100%" class="indextable genindextable"><tr>
-    <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="webapp_food.html#webapp_food.user_fooder.User.load_datasets">load_datasets() (webapp_food.user_fooder.User class method)</a>
-</li>
-    </ul></td>
-  </tr></table>
-</section>
-
-<section id="M" class="genindex-section">
-  <h2>M</h2>
-  <table style="width: 100%" class="indextable genindextable"><tr>
-    <td style="width: 33%; vertical-align: top;"><ul>
-        <li>
-    module
-
-        <ul>
-          <li><a href="webapp_food.html#module-webapp_food">webapp_food</a>
-</li>
-          <li><a href="webapp_food.html#module-webapp_food.user_fooder">webapp_food.user_fooder</a>
-</li>
-          <li><a href="webapp_food.html#module-webapp_food.utils">webapp_food.utils</a>
-</li>
-        </ul></li>
-    </ul></td>
-  </tr></table>
-</section>
-
-<section id="N" class="genindex-section">
-  <h2>N</h2>
-  <table style="width: 100%" class="indextable genindextable"><tr>
-    <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="webapp_food.html#webapp_food.user_fooder.User.near_neighboor">near_neighboor() (webapp_food.user_fooder.User static method)</a>
-</li>
-    </ul></td>
-  </tr></table>
-</section>
-
-<section id="P" class="genindex-section">
-  <h2>P</h2>
-  <table style="width: 100%" class="indextable genindextable"><tr>
-    <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="webapp_food.html#webapp_food.user_fooder.User.pivot_table_of_df">pivot_table_of_df() (webapp_food.user_fooder.User static method)</a>
-</li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="webapp_food.html#webapp_food.utils.print_image">print_image() (in module webapp_food.utils)</a>
-</li>
-    </ul></td>
-  </tr></table>
-</section>
-
-<section id="R" class="genindex-section">
-  <h2>R</h2>
-  <table style="width: 100%" class="indextable genindextable"><tr>
-    <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="webapp_food.html#webapp_food.user_fooder.User.recipe_suggestion">recipe_suggestion() (webapp_food.user_fooder.User method)</a>
-</li>
-    </ul></td>
-  </tr></table>
-</section>
-
-<section id="S" class="genindex-section">
-  <h2>S</h2>
-  <table style="width: 100%" class="indextable genindextable"><tr>
-    <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="webapp_food.html#webapp_food.utils.search_images">search_images() (in module webapp_food.utils)</a>
-</li>
-    </ul></td>
-  </tr></table>
-</section>
-
-<section id="U" class="genindex-section">
-  <h2>U</h2>
-  <table style="width: 100%" class="indextable genindextable"><tr>
-    <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="webapp_food.html#webapp_food.utils.update_preferences">update_preferences() (in module webapp_food.utils)</a>
-</li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="webapp_food.html#webapp_food.user_fooder.User">User (class in webapp_food.user_fooder)</a>
-</li>
-    </ul></td>
-  </tr></table>
-</section>
-
-<section id="V" class="genindex-section">
-  <h2>V</h2>
-  <table style="width: 100%" class="indextable genindextable"><tr>
-    <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="webapp_food.html#webapp_food.user_fooder.User.validity_type_of_dish">validity_type_of_dish() (webapp_food.user_fooder.User static method)</a>
-</li>
-    </ul></td>
-  </tr></table>
-</section>
-
-<section id="W" class="genindex-section">
-  <h2>W</h2>
-  <table style="width: 100%" class="indextable genindextable"><tr>
-    <td style="width: 33%; vertical-align: top;"><ul>
-        <li>
-    webapp_food
-
-        <ul>
-          <li><a href="webapp_food.html#module-webapp_food">module</a>
-</li>
-        </ul></li>
-        <li>
-    webapp_food.user_fooder
-
-        <ul>
-          <li><a href="webapp_food.html#module-webapp_food.user_fooder">module</a>
-</li>
-        </ul></li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
-        <li>
-    webapp_food.utils
-
-        <ul>
-          <li><a href="webapp_food.html#module-webapp_food.utils">module</a>
-</li>
-        </ul></li>
-    </ul></td>
-  </tr></table>
-</section>
-
 
         </article>
       </div>
@@ -455,7 +516,17 @@
         
         <div class="related-pages">
           
-          
+          <a class="prev-page" href="webapp_food.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">webapp_food package</div>
+                
+              </div>
+            </a>
         </div>
         <div class="bottom-of-page">
           <div class="left-details">
@@ -474,8 +545,28 @@
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Explanation of Recipe Suggestion</a><ul>
+<li><a class="reference internal" href="#example-context">Example Context</a></li>
+<li><a class="reference internal" href="#algorithm-steps">Algorithm Steps</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>

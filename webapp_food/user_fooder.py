@@ -341,7 +341,7 @@ class User:
         elif self._type_of_dish == "dessert":
             interactions = self.get_interactions_dessert
         if len(self._preferences) == 0:
-            logger.info('user new historic is empty')
+            logger.info("new user's historic is empty")
             recipe_suggested = interactions["recipe_id"].sample(n=1).iloc[0]
         else:
             recipes_id = list(self._preferences.keys())
