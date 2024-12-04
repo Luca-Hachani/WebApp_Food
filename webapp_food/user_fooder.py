@@ -3,9 +3,12 @@ Module containing the User class for recipe recommendations.
 """
 # Importation des librairies
 from dataclasses import dataclass, field
-import logging
+from itertools import combinations
+from webapp_food.utils import NoNeighboorError
 import numpy as np
 import pandas as pd
+import networkx as nx
+import logging
 
 logger = logging.getLogger(__name__)
 
@@ -110,6 +113,8 @@ class User:
         init=False, repr=False)  # Chargé au runtime
     _interactions_dessert: pd.DataFrame = field(
         init=False, repr=False)  # Chargé au runtime
+    _near_neighboor: pd.DataFrame = field(
+        init=False, repr=False)  # Chargé au runtime
 
     # post initialisation
     def __post_init__(self) -> None:
@@ -131,6 +136,9 @@ class User:
         self.validity_type_of_dish(self._type_of_dish)
         # Load the datasets only once to avoid unnecessary overhead.
         self.load_datasets()
+
+        # Initialise near neighbors at None
+        self._near_neighboor = pd.DataFrame()
 
     # static methods
     @staticmethod
@@ -355,6 +363,7 @@ class User:
             interactions_pivot["dist"] = interactions_abs.sum(axis=1)
             interactions_selection = self.near_neighboor(
                 recipes_id, interactions, interactions_pivot)
+            self._near_neighboor = interactions_selection.index
             if interactions_selection.empty:
                 # drop recipes already in preferences
                 interactions_selection = interactions[
@@ -410,3 +419,104 @@ class User:
             raise KeyError(
                 f'The recipe ID {recipe_deleted}\
                 is not in the user preferences.')
+
+    def get_graph(self, type: int) -> nx.MultiGraph:
+        """
+        Génère un graphe d'interactions utilisateur basé sur les préférences
+        et les recettes.
+
+        Chaque nœud est un utilisateur (vous-même ou vos voisins proches)
+        et chaque arête représente une recette ayant la même note
+        entre deux utilisateurs.
+
+        Parameters
+        ----------
+        type : int
+            - `1` : Recettes aimées.
+            - `-1` : Recettes non aimées.
+
+        Returns
+        -------
+        nx.MultiGraph
+            Graphe des interactions utilisateur.
+
+        Raises
+        ------
+        NoNeighboorError
+            Si aucun voisin n'est disponible pour créer le graphe.
+        """
+        logger.debug("Getting user network graph")
+
+        if self._near_neighboor.empty:
+            logger.warning("No neighboor found")
+            raise NoNeighboorError("No neighboor found")
+
+        user = "you"
+        recipe_ids = [recipe_id for recipe_id,
+                      rate in self._preferences.items() if rate == type]
+        near_neighboor = self._near_neighboor
+
+        graph = nx.MultiGraph()
+        graph.add_node(user)
+        graph.add_nodes_from(
+            ["user: " + str(neighboor) for neighboor in near_neighboor])
+        if self.get_type_of_dish == "main":
+            interactions = self.get_interactions_main
+        elif self.get_type_of_dish == "dessert":
+            interactions = self.get_interactions_dessert
+        interactions = self.pivot_table_of_df(
+            interactions.loc[interactions['user_id'].isin(near_neighboor)])
+
+        for recipe in recipe_ids:
+            neighboor_to_edges = interactions[
+                interactions[recipe] == type].index
+            neighboor_to_edges = ["user: " + str(neighboor)
+                                  for neighboor in neighboor_to_edges]
+            neighboor_to_edges.append(user)
+            edges = list(combinations(neighboor_to_edges, 2))
+            graph.add_edges_from(edges)
+
+        return graph
+
+    def get_neighboor_data(self):
+        """
+        Analyse les interactions entre l'utilisateur principal et ses voisins
+        proches pour identifier les recettes aimées en commun, non aimées en
+        commun, et les recettes à recommander.
+
+        Returns
+        -------
+        pd.DataFrame
+            DataFrame avec les colonnes :
+            - "common_likes" : Nombre de recettes aimées en commun.
+            - "common_dislikes" : Nombre de recettes non aimées en commun.
+            - "recipes to recommend" : Nombre de recettes à recommander.
+        """
+        logger.debug("Getting neighboors data")
+
+        liked = [recipe_id for recipe_id,
+                 rate in self._preferences.items() if rate == 1]
+        disliked = [recipe_id for recipe_id,
+                    rate in self._preferences.items() if rate == -1]
+        near_neighboor = self._near_neighboor
+
+        if self.get_type_of_dish == "main":
+            interactions = self.get_interactions_main
+        elif self.get_type_of_dish == "dessert":
+            interactions = self.get_interactions_dessert
+        interactions = self.pivot_table_of_df(
+            interactions.loc[interactions['user_id'].isin(near_neighboor)])
+
+        common_likes = (interactions[liked] == 1).sum(axis=1)
+        common_dislikes = (interactions[disliked] == -1).sum(axis=1)
+
+        remaining_recipes = interactions.drop(columns=liked)
+        to_recommend = (remaining_recipes == 1).sum(axis=1)
+
+        df = pd.DataFrame({
+            "common likes": common_likes,
+            "common dislikes": common_dislikes,
+            "recipes to recommend": to_recommend
+        })
+
+        return df
