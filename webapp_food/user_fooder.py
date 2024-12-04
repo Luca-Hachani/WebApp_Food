@@ -147,6 +147,9 @@ class User:
         # pour éviter une surcharge inutile)
         self.load_datasets()
 
+        # Initialise near neighbors at None
+        self._near_neighboor = pd.DataFrame()
+
     # static methods
     @staticmethod
     def validity_type_of_dish(type_of_dish : str) -> None:
@@ -466,28 +469,33 @@ class User:
         """
         logger.debug("Getting user network graph")
 
+        if self._near_neighboor.empty:
+            logger.warning("No neighboor found")
+            raise NoNeighboorError("No neighboor found")
+
         user = "you"
         recipe_ids = [recipe_id for recipe_id,
                       rate in self._preferences.items() if rate == type]
         near_neighboor = self._near_neighboor
 
-        if not near_neighboor:
-            logger.warning("No neighboor found")
-            raise NoNeighboorError("No neighboor found")
-
         graph = nx.MultiGraph()
         graph.add_node(user)
-        graph.add_nodes_from(near_neighboor)
+        graph.add_nodes_from(
+            ["user: " + str(neighboor) for neighboor in near_neighboor])
         if self.get_type_of_dish == "main":
             interactions = self.get_interactions_main
         elif self.get_type_of_dish == "dessert":
             interactions = self.get_interactions_dessert
-        interactions = interactions.loc[interactions['user_id'].isin(
-            near_neighboor)]
+        interactions = self.pivot_table_of_df(
+            interactions.loc[interactions['user_id'].isin(near_neighboor)])
+
         for recipe in recipe_ids:
-            neighboor_to_edges = interactions[interactions['recipe_id']
-                                              == recipe]['user_id']
-            edges = list(combinations(neighboor_to_edges + user, 2))
+            neighboor_to_edges = interactions[
+                interactions[recipe] == type].index
+            neighboor_to_edges = ["user: " + str(neighboor)
+                                  for neighboor in neighboor_to_edges]
+            neighboor_to_edges.append(user)
+            edges = list(combinations(neighboor_to_edges, 2))
             graph.add_edges_from(edges)
 
         return graph
@@ -518,20 +526,19 @@ class User:
             interactions = self.get_interactions_main
         elif self.get_type_of_dish == "dessert":
             interactions = self.get_interactions_dessert
-        interactions = interactions.loc[interactions['user_id'].isin(
-            near_neighboor)]
+        interactions = self.pivot_table_of_df(
+            interactions.loc[interactions['user_id'].isin(near_neighboor)])
 
         common_likes = (interactions[liked] == 1).sum(axis=1)
-        common_dislikes = (interactions[disliked]).sum(axis=1)
-    
+        common_dislikes = (interactions[disliked] == -1).sum(axis=1)
+
         remaining_recipes = interactions.drop(columns=liked)
         to_recommend = (remaining_recipes == 1).sum(axis=1)
 
         df = pd.DataFrame({
-            "common_likes": common_likes,
-            "common_dislikes": common_dislikes,
+            "common likes": common_likes,
+            "common dislikes": common_dislikes,
             "recipes to recommend": to_recommend
         })
 
         return df
-

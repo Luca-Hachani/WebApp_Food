@@ -38,9 +38,9 @@ from webapp_food import user_fooder as uf
 def setup_user():
     # Simulation des datasets
     main_data = pd.DataFrame({
-        'user_id': [1, 2, 3],
-        'recipe_id': [101, 102, 103],
-        'rate': [1, 1, -1]
+        'user_id': [1, 2, 3, 4, 4],
+        'recipe_id': [101, 102, 103, 102, 103],
+        'rate': [1, 1, -1, 1, 1]
     })
     dessert_data = pd.DataFrame({
         'user_id': [1, 2],
@@ -131,14 +131,14 @@ def test_recipe_suggestion(setup_user):
     assert recipe_suggested in user.get_interactions_main['recipe_id'].values
     assert recipe_suggested not in user.get_preferences.keys()
     # Test if the user has no near neighbors
-    user.add_preferences(recipe_suggested, 1)
+    user.add_preferences(101, 1)
     recipe_suggested = user.recipe_suggestion()
     assert recipe_suggested not in user.get_preferences.keys()
     assert recipe_suggested in user.get_interactions_main['recipe_id'].values
     # Test if all recipes have been suggested
-    user.add_preferences(recipe_suggested, -1)
+    user.add_preferences(102, -1)
     recipe_suggested = user.recipe_suggestion()
-    user.add_preferences(recipe_suggested, 1)
+    user.add_preferences(103, 1)
     with pytest.raises(ValueError):
         recipe_suggested = user.recipe_suggestion()
 
@@ -146,24 +146,33 @@ def test_recipe_suggestion(setup_user):
 # Test `get_graph`
 
 
-def test_get_graph_no_neighbors(setup_user):
+def test_get_graph_no_neighboors(setup_user):
     user = setup_user
-    user._near_neighboor = []  # Simulate missing neighboors
-    
+
+    with pytest.raises(uf.NoNeighboorError, match="No neighboor found"):
+        user.get_graph(1)
+
+    user.add_preferences(101, 1)
+    user.recipe_suggestion()
+
     with pytest.raises(uf.NoNeighboorError, match="No neighboor found"):
         user.get_graph(1)
 
 
-def test_get_graph_no_recipes(setup_user):
+def test_get_graph(setup_user):
     user = setup_user
-    user.add_preferences(101, 1)
-    user._near_neighboor = []
+    user.add_preferences(102, 1)
+    user.recipe_suggestion()
 
     graph = user.get_graph(1)
-
     assert len(graph.nodes) == 2
     assert len(graph.edges) == 1
-    assert ("you", 1) in graph.edges or (1, "you") in graph.edges
+    assert ("you", "user: 4") in graph.edges or ("user: 4", "you") in graph.edges
+
+    graph = user.get_graph(-1)
+    assert len(graph.nodes) == 2
+    assert len(graph.edges) == 0
+
 
 
 # Test `get_neighboor_data`
@@ -172,20 +181,12 @@ def test_get_graph_no_recipes(setup_user):
 def test_common_likes(setup_user):
     user = setup_user
 
-    user._preferences = {101: 1, 102: 1, 103: -1}
-    user._near_neighboor = [1, 2, 3]
-    
+    user.add_preferences(102, 1)
+    user.recipe_suggestion()
+
     df = user.get_neighboor_data()
-    
-    assert df.loc[1, "common likes"] == 1
-    assert df.loc[1, "common dislikes"] == 0
-    assert df.loc[1, "recipes to recommend"] == 0
 
-    assert df.loc[2, "common likes"] == 1
-    assert df.loc[2, "common dislikes"] == 0
-    assert df.loc[2, "recipes to recommend"] == 0
-
-    assert df.loc[3, "common likes"] == 0
-    assert df.loc[3, "common dislikes"] == 1
-    assert df.loc[3, "recipes to recommend"] == 0
+    assert df.loc[4, "common likes"] == 1
+    assert df.loc[4, "common dislikes"] == 0
+    assert df.loc[4, "recipes to recommend"] == 1
 
