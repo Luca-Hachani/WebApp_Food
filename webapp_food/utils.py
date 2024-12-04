@@ -14,6 +14,10 @@ class ImageError(Exception):
     """Raised when an image cannot be found for a recipe"""
 
 
+class NoNeighboorError(Exception):
+    """Raised when the user has no near neighboor"""
+
+
 def search_images(search_term):
     """use the requests library to search for images on Google
 
