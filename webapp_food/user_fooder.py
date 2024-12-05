@@ -1,5 +1,5 @@
 """
-Module contenant la classe User pour la recommandation de recettes.
+Module containing the User class for recipe recommendations.
 """
 # Importation des librairies
 from dataclasses import dataclass, field
@@ -16,100 +16,93 @@ logger = logging.getLogger(__name__)
 @dataclass
 class User:
     """
-    Classe représentant un utilisateur et ses interactions avec des recettes,
-    notamment pour proposer des suggestions de recettes basées sur
-    ses préférences.
+    Class representing a user and their interactions with recipes,
+    particularly for suggesting recipes based on their preferences.
 
-    Attributs :
+    Attributes
     ----------
     _type_of_dish : str
-        Type de plat préféré de l'utilisateur (doit être "main" ou "dessert").
-    _preferences : dict
-        Dictionnaire contenant les préférences de l'utilisateur,
-        où les clés sont les IDs de recettes
-        et les valeurs sont les notes attribuées
-        (par défaut, dictionnaire vide).
-    _interactions_main : pd.DataFrame
-        Dataset contenant les interactions utilisateur-recette pour
-        les plats principaux (chargé dynamiquement).
-    _interactions_dessert : pd.DataFrame
-        Dataset contenant les interactions utilisateur-recette pour les
-        desserts (chargé dynamiquement).
+        The preferred type of dish for the user (must be "main" or "dessert").
 
-    Méthodes :
-    ---------
+    _preferences : dict
+        A dictionary containing the user's preferences,
+        where the keys are recipe IDs and the values are the ratings given
+        (default: empty dictionary).
+
+    _interactions_main : pd.DataFrame
+        Dataset containing user-recipe interactions for main dishes
+        (dynamically loaded).
+
+    _interactions_dessert : pd.DataFrame
+        Dataset containing user-recipe interactions for desserts
+        (dynamically loaded).
+
+    Methods
+    -------
     __post_init__() -> None
-        Méthode exécutée après l'initialisation pour valider le type de plat et
-        charger les datasets.
+        Method executed after initialization to validate the dish type
+        and load datasets.
 
     validity_type_of_dish(type_of_dish: str) -> None
-        Vérifie si le type de plat est valide ("main" ou "dessert"). Lève une
-        erreur en cas d'invalidité.
+        Checks if the dish type is valid ("main" or "dessert").
+        Raises an error if invalid.
 
     pivot_table_of_df(interactions_reduce: pd.DataFrame) -> pd.DataFrame
-        Transforme un DataFrame d'interactions en une table pivotée avec
-        les IDs d'utilisateur
-        comme index et les IDs de recettes comme colonnes.
+        Converts a DataFrame of interactions into a pivot table with user IDs
+        as rows and recipe IDs as columns.
 
     abs_deviation(recipes_rating: np.ndarray, interactions_pivot: pd.DataFrame)
     -> pd.DataFrame
-        Calcule la déviation absolue entre les notes d'une recette et les
-        interactions existantes.
+        Calculates the absolute deviation between recipe ratings and
+        existing interactions.
 
-    near_neighboor(self, recipes_id: list, interactions: pd.DataFrame,
+    near_neighboor(recipes_id: list, interactions: pd.DataFrame,
     interactions_pivot_input: pd.DataFrame) -> pd.DataFrame
-        Sélectionne les utilisateurs voisins proches basés sur leurs distances
-        et leurs interactions.
+        Selects close neighbor users based on their distances and interactions.
 
     load_datasets() -> None
-        Charge les datasets pour les plats principaux et les desserts,
-        si ce n'est pas déjà fait.
+        Loads datasets for main dishes and desserts, if not already loaded.
 
     get_type_of_dish() -> str
-        Retourne le type de plat préféré de l'utilisateur.
+        Returns the user's preferred type of dish.
 
     get_preferences() -> dict
-        Retourne le dictionnaire des préférences de l'utilisateur.
-    
-    get_interactions_main() -> pd.DataFrame
-        Retourne le dataset des interactions utilisateur-recette
-        pour les plats principaux.
+        Returns the user's preferences dictionary.
 
-    def get_interactions_dessert() -> pd.DataFrame
-        Retourne le dataset des interactions utilisateur-recette
-        pour les desserts.
+    get_interactions_main() -> pd.DataFrame
+        Returns the dataset of user-recipe interactions for main dishes.
+
+    get_interactions_dessert() -> pd.DataFrame
+        Returns the dataset of user-recipe interactions for desserts.
 
     recipe_suggestion() -> int
-        Propose une recette basée sur les préférences de l'utilisateur et
-        les interactions existantes.
-        Si aucune préférence n'existe, une recette aléatoire est suggérée.
+        Suggests a recipe based on the user's preferences and existing
+        interactions. If no preferences exist, a random recipe is suggested.
 
     add_preferences(recipe_suggested: int, rating: int) -> None
-        Ajoute une préférence pour une recette donnée avec une note spécifique.
+        Adds a preference for a specific recipe with a given rating.
 
     del_preferences(recipe_deleted: int) -> None
-        Supprime une préférence associée à une recette donnée.
+        Removes a preference associated with a specific recipe.
 
-    Notes :
-    ------
-    - Les interactions sont stockées dans des fichiers CSV, chargés
-    au moment de l'exécution.
-    - La méthode `recipe_suggestion` implémente un système de
-    recommandation simple basé sur la similarité
-      des utilisateurs avec des distances absolues.
+    Notes
+    -----
+    - Interactions are stored in CSV files, loaded at runtime.
+    - The `recipe_suggestion` method implements a simple recommendation system
+      based on user similarity using absolute distances.
 
-    Exemple d'utilisation :
-    -----------------------
-    # Créer un utilisateur pour les plats principaux
+    Example
+    -------
+    #1 Create a user for main dishes :
     user = User(_type_of_dish="main")
 
-    # Ajouter une préférence
-    user.add_preferences(recipe_suggested=123, rating= +1 ou-1)
-
-    # Proposer une recette
+    #2 Suggest a recipe :
     suggestion = user.recipe_suggestion()
 
-    # Supprimer une préférence
+    #3 Add a preference :
+    user.add_preferences(recipe_suggested=123, rating=+1/-1)
+
+    #* Remove a preference :
     user.del_preferences(recipe_deleted=123)
     """
 
@@ -126,25 +119,22 @@ class User:
     # post initialisation
     def __post_init__(self) -> None:
         """
-        Exécutée après l'initialisation de la classe.
+        Executed after the class initialization.
 
-        Vérifie si le type de plat est valide et charge les datasets
-        des interactions
-        pour les plats principaux et les desserts.
+        Validates the dish type and loads interaction datasets for
+        main dishes and desserts.
 
-        Raises:
+        Raises
         ------
-        ValueError:
-            Si le type de plat (_type_of_dish) est invalide.
+        ValueError
+            If the dish type (_type_of_dish) is invalid.
         """
         logger.debug(
             "User instance created, \
             checking type of dish and loading datasets")
-        # Teste la validité du type de plat
+        # Test dish type validity
         self.validity_type_of_dish(self._type_of_dish)
-
-        # Charge les datasets (une seule fois,
-        # pour éviter une surcharge inutile)
+        # Load the datasets only once to avoid unnecessary overhead.
         self.load_datasets()
 
         # Initialise near neighbors at None
@@ -152,19 +142,19 @@ class User:
 
     # static methods
     @staticmethod
-    def validity_type_of_dish(type_of_dish : str) -> None:
+    def validity_type_of_dish(type_of_dish: str) -> None:
         """
-        Vérifie si le type de plat est valide.
+        Validates the dish type.
 
-        Parameters:
+        Parameters
         ----------
         type_of_dish : str
-            Type de plat fourni (doit être "main" ou "dessert").
+            The provided dish type (must be "main" or "dessert").
 
-        Raises:
+        Raises
         ------
-        ValueError:
-            Si le type de plat n'est pas "main" ou "dessert".
+        ValueError
+            If the dish type is neither "main" nor "dessert".
         """
         logger.debug(f"Checking validity of type_of_dish={type_of_dish}")
         if type_of_dish not in ["main", "dessert"]:
@@ -174,24 +164,21 @@ class User:
                              type_of_dish}".')
 
     @staticmethod
-    def pivot_table_of_df(interactions_reduce : pd.DataFrame) -> pd.DataFrame:
+    def pivot_table_of_df(interactions_reduce: pd.DataFrame) -> pd.DataFrame:
         """
-        Transforme un DataFrame d'interactions utilisateur-recette
-        en une table pivotée.
+        Transforms a user-recipe interaction DataFrame into a pivot table.
 
-        Parameters:
+        Parameters
         ----------
         interactions_reduce : pd.DataFrame
-            DataFrame des interactions filtrées, contenant les
-            colonnes "user_id", "recipe_id", et "rating".
+            Filtered interaction DataFrame containing the columns "user_id",
+            "recipe_id", and "rating".
 
-        Returns:
+        Returns
         -------
-        pd.DataFrame:
-            Table pivotée avec les IDs des utilisateurs en index,
-            les IDs des recettes en colonnes,
-            et les évaluations en valeurs. Les valeurs manquantes
-            sont remplacées par 0.
+        pd.DataFrame
+            A pivot table with user IDs as rows, recipe IDs as columns, and
+            ratings as values. Missing values are replaced with 0.
         """
         logger.debug("Pivoting DataFrame of interactions")
         interactions_pivot = interactions_reduce.pivot(
@@ -202,26 +189,25 @@ class User:
         return interactions_pivot
 
     @staticmethod
-    def abs_deviation(recipes_rating : np.ndarray, interactions_pivot : pd.DataFrame) -> pd.DataFrame:
+    def abs_deviation(recipes_rating: np.ndarray,
+                      interactions_pivot: pd.DataFrame) -> pd.DataFrame:
         """
-        Calcule la déviation absolue entre les préférences du
-        nouvel utilisateur pour une recette et les interactions existantes.
+        Computes the absolute deviation between a new user's recipe preferences
+        and existing interactions.
 
-        Parameters:
+        Parameters
         ----------
         recipes_rating : np.ndarray
-            Préférences attribuées à des recettes par le nouvel
-            utilisateur (tableau 1D).
+            Preferences assigned to recipes by the new user (1D array).
         interactions_pivot : pd.DataFrame
-            Table pivotée des interactions contenant les notes
-            des utilisateurs pour chaque recette.
+            Pivot table of interactions containing user ratings for
+            each recipe.
 
-        Returns:
+        Returns
         -------
-        pd.DataFrame:
-            DataFrame contenant les déviations absolues entre
-            les préférences du nouvel utilisateur
-            et celles des autres utilisateurs.
+        pd.DataFrame
+            DataFrame containing absolute deviations between the new user's
+            preferences and existing users' preferences.
         """
         logger.debug(
             "Calculating absolute deviation between user \
@@ -232,27 +218,25 @@ class User:
         return interactions_abs
 
     @staticmethod
-    def near_neighboor(recipes_id : list, interactions : pd.DataFrame,\
-        interactions_pivot_input : pd.DataFrame) -> pd.DataFrame:
+    def near_neighboor(recipes_id: list, interactions: pd.DataFrame,
+                       interactions_pivot_input: pd.DataFrame) -> pd.DataFrame:
         """
-        Sélectionne les utilisateurs voisins proches basés sur
-        la distance et leurs interactions.
+        Selects nearby users based on distances and their interactions.
 
-        Parameters:
+        Parameters
         ----------
         recipes_id : list
-            Liste des IDs de recettes déjà révisées par le nouvel utilisateur.
+            List of recipe IDs already reviewed by the new user.
         interactions : pd.DataFrame
-            DataFrame contenant les interactions utilisateur-recette.
+            DataFrame containing user-recipe interactions.
         interactions_pivot_input : pd.DataFrame
-            Table pivotée contenant aussi la colonne distance entre nouvel
-            utilisateur et utilisateurs voisins.
+            Pivot table containing user distances and recipe interactions.
 
-        Returns:
+        Returns
         -------
-        pd.DataFrame:
-            Interactions filtrées des voisins proches pour des recettes
-            non révisées par le nouvel utilisateur.
+        pd.DataFrame
+            Filtered interactions from nearby users for recipes not reviewed
+            by the new user.
         """
         logger.debug(
             "Selecting near neighbors based on distance and interactions")
@@ -271,15 +255,14 @@ class User:
     @classmethod
     def load_datasets(cls) -> None:
         """
-        Charge les datasets d'interactions utilisateur-recette pour
-        les plats principaux et les desserts.
+        Loads user-recipe interaction datasets for main dishes and desserts.
 
-        Notes:
-        ------
-        - Les fichiers CSV sont chargés uniquement une fois
-        au niveau de la classe.
-        - Les fichiers doivent se trouver aux emplacements spécifiés
-        ("data/data/PP_user_main_dishes.csv" et "data/PP_user_desserts").
+        Notes
+        -----
+        - CSV files are loaded only once at the class level.
+        - Files must be located at the specified paths
+          ("data/data/PP_user_main_dishes.csv" and "data/PP_user_desserts").
+
         """
         logger.debug("Loading datasets for main dishes and desserts")
         if not hasattr(cls, "_interactions_main") or \
@@ -293,12 +276,12 @@ class User:
     @property
     def get_type_of_dish(self) -> str:
         """
-        Retourne le type de plat désiré par l'utilisateur.
+        Returns the type of dish desired by the user.
 
-        Returns:
+        Returns
         -------
-        str:
-            Type de plat ("main" ou "dessert").
+        str
+            The type of dish ("main" or "dessert").
         """
         logger.debug("Getting type of dish for user")
         return self._type_of_dish
@@ -306,13 +289,12 @@ class User:
     @property
     def get_preferences(self) -> dict:
         """
-        Retourne le dictionnaire des préférences de l'utilisateur.
+        Returns the user's preferences.
 
-        Returns:
+        Returns
         -------
-        dict:
-            Dictionnaire contenant les IDs de recettes comme clés
-            et les notes attribuées comme valeurs.
+        dict
+            A dictionary where keys are recipe IDs and values are the ratings.
         """
         logger.debug("Getting preferences for user")
         return self._preferences
@@ -320,13 +302,12 @@ class User:
     @property
     def get_interactions_main(self) -> pd.DataFrame:
         """
-        Retourne le dataset des interactions utilisateur-recette
-        pour les plats principaux.
+        Returns the dataset of user-recipe interactions for main dishes.
 
-        Returns:
+        Returns
         -------
-        pd.DataFrame:
-            Dataset des interactions pour les plats principaux.
+        pd.DataFrame
+            The dataset of interactions for main dishes.
         """
         logger.debug("Getting interactions dataset for main dishes")
         return self._interactions_main
@@ -334,13 +315,12 @@ class User:
     @property
     def get_interactions_dessert(self) -> pd.DataFrame:
         """
-        Retourne le dataset des interactions utilisateur-recette
-        pour les desserts.
+        Returns the dataset of user-recipe interactions for desserts.
 
-        Returns:
+        Returns
         -------
-        pd.DataFrame:
-            Dataset des interactions pour les desserts.
+        pd.DataFrame
+            The dataset of interactions for desserts.
         """
         logger.debug("Getting interactions dataset for desserts")
         return self._interactions_dessert
@@ -348,20 +328,19 @@ class User:
     # methods
     def recipe_suggestion(self) -> int:
         """
-        Propose une recette en fonction des préférences du nouvel
-        utilisateur et des interactions existantes.
+        Suggests a recipe based on the new user's preferences and
+        existing interactions.
 
-        Returns:
+        Returns
         -------
-        int:
-            ID de la recette suggérée.
+        int
+            Suggested recipe ID.
 
-        Notes:
-        ------
-        - Si aucune préférence n'existe pour le nouvel utilisateur,
-        une recette aléatoire est suggérée.
-        - La suggestion repose sur la similarité des utilisateurs
-        voisins proches.
+        Notes
+        -----
+        - If the new user has no preferences, a random recipe is suggested.
+        - The suggestion is based on the similarity of nearby users.
+
         """
         logger.debug("Proposing a recipe suggestion for user")
         interactions = None
@@ -370,7 +349,7 @@ class User:
         elif self._type_of_dish == "dessert":
             interactions = self.get_interactions_dessert
         if len(self._preferences) == 0:
-            logger.info('user new historic is empty')
+            logger.info("new user's historic is empty")
             recipe_suggested = interactions["recipe_id"].sample(n=1).iloc[0]
         else:
             recipes_id = list(self._preferences.keys())
@@ -403,35 +382,34 @@ class User:
                     interactions_selection.sum(axis=0).idxmax())
         return recipe_suggested
 
-    def add_preferences(self, recipe_suggested : int, rating : int) -> None:
+    def add_preferences(self, recipe_suggested: int, rating: int) -> None:
         """
-        Ajoute une nouvelle préférence pour une recette spécifique.
+        Adds a new preference for a specific recipe.
 
-        Parameters:
+        Parameters
         ----------
         recipe_suggested : int
-            ID de la recette à ajouter aux préférences.
+            The ID of the recipe to be added to preferences.
         rating : int
-            Note attribuée à la recette.
+            The rating assigned to the recipe.
         """
         logger.debug(f"Adding a new preference for recipe {
                      recipe_suggested} with rating {rating}")
         self._preferences[recipe_suggested] = rating
 
-    def del_preferences(self, recipe_deleted : int) -> None:
+    def del_preferences(self, recipe_deleted: int) -> None:
         """
-        Supprime une préférence associée à une recette donnée.
+        Removes a preference associated with a specific recipe.
 
-        Parameters:
+        Parameters
         ----------
         recipe_deleted : int
-            ID de la recette à supprimer des préférences.
+            The ID of the recipe to be removed from preferences.
 
-        Raises:
+        Raises
         ------
-        KeyError:
-            Si l'ID de la recette à supprimer n'existe pas dans
-            les préférences de l'utilisateur.
+        KeyError
+            If the recipe ID does not exist in the user's preferences.
         """
         logger.debug(f"Deleting preference for recipe {recipe_deleted}")
         if recipe_deleted in self._preferences:
