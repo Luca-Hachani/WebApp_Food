@@ -5,7 +5,7 @@ to see the graph of adjency for the current user.
 The user can also see the recommended recipes and their details."""
 import streamlit as st
 from webapp_food.utils import update_preferences, print_image, \
-    ImageError, fetch_recipe_details, visualize_graph
+    ImageError, fetch_recipe_details, visualize_graph, NoNeighborError
 from webapp_food.user_fooder import User
 import pandas as pd
 import logging
@@ -18,7 +18,7 @@ st.set_page_config(
 )
 
 # Page state variables
-GRAPH_VIZ = HISTORY = False
+GRAPH_VIZ = HISTORY = GRAPH_ERROR = False
 
 """
 Page management: handling of the different variables
@@ -50,8 +50,11 @@ if st.session_state.get("dessert"):
 
 if st.session_state.get("graph"):
     logging.debug("Graph button clicked")
-    GRAPH_VIZ = True
-    st.session_state.graph_type = LIKE
+    if st.session_state.get("user"):
+        GRAPH_VIZ = True
+        st.session_state.graph_type = LIKE
+    else:
+        GRAPH_ERROR = True
 
 if st.session_state.get("dislike_graph"):
     logging.debug("Dislike graph button clicked")
@@ -141,6 +144,9 @@ if RECOMMENDATION_PAGE or MAIN_PAGE:
     st.sidebar.button(
         "Click here to show  \nyour user adjency graph", key="graph",
         help="Explain website's algorithm and dataset used")
+    if GRAPH_ERROR:
+        st.sidebar.write(
+            "You need to like or dislike a recipe before accessing the graph")
 # Management of History
 if st.session_state.get("user") and not GRAPH_VIZ:
     st.sidebar.write("History of your preferences:")
@@ -216,6 +222,8 @@ if not GRAPH_VIZ:
     col2.button("Dessert", key="dessert")
 # Page display: graph page
 else:
+    st.session_state.last_recommended_index = \
+        st.session_state.user.recipe_suggestion()
     st.write(
         """
         Fooder is a food recommendation website.
@@ -225,27 +233,44 @@ else:
     )
     st.sidebar.button("Back", key="back")
     col1, col2 = st.columns([4, 2], gap="small")
-    graph_to_plot = st.session_state.user.get_graph(
-        st.session_state.graph_type)
-    visualize_graph(graph_to_plot)
-    with open("webapp_food/graphs/neighbour.html", "r", encoding="utf-8") as f:
-        html_content = f.read()
-    with col1:
-        st.components.v1.html(html_content, height=500)
-        col11, col12 = st.columns(2)
-        col11.button('Graph of Likes neighboors', key='like_graph')
-        col12.button('Graph of Dislikes neighboors', key='dislike_graph')
-    with col2:
+    try:
+        graph_to_plot = st.session_state.user.get_graph(
+            st.session_state.graph_type)
+    except NoNeighborError as e:
+        logging.info(e)
         st.write(
             """
-            <div style="text-align: center;">
+            <div style="text-align: center; font-size:30px">
                 <br><br><br><br>
-                The graph shows the relationships between you and other users.
+                You have not yet liked or disliked any recipe, <br>
+                or you have no near neighbors in the database from your current preferences.
                 <br><br>
             </div>
             """,
             unsafe_allow_html=True,
         )
+    else:
+        visualize_graph(graph_to_plot)
+        with open("webapp_food/graphs/neighbour.html", "r", encoding="utf-8") as f:
+            html_content = f.read()
+        with col1:
+            st.components.v1.html(html_content, height=500)
+            col11, col12 = st.columns(2)
+            col11.button('Graph of Likes neighbors', key='like_graph')
+            col12.button('Graph of Dislikes neighbors', key='dislike_graph')
+        with col2:
+            st.write(
+                """
+                <div style="text-align: center;">
+                    <br><br><br>
+                    The graph shows the relationships between you and other users.
+                    <br><br>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+
 # At the end of the page, put the logo centered
 col1, col2, col3, col4, col5 = st.columns(5)
 col3.image("img/fooder_logo2.png", use_container_width=True)

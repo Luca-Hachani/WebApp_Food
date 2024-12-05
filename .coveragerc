@@ -9,6 +9,7 @@ source =
 show_missing = True
 omit = fooder.py
     __init__.py
+    settings.py
 
 
 # Exclut certaines lignes du calcul de couverture

@@ -4,7 +4,7 @@ Module contenant la classe User pour la recommandation de recettes.
 # Importation des librairies
 from dataclasses import dataclass, field
 from itertools import combinations
-from webapp_food.utils import NoNeighboorError
+from webapp_food.utils import NoNeighborError
 import numpy as np
 import pandas as pd
 import networkx as nx
@@ -56,7 +56,7 @@ class User:
         Calcule la déviation absolue entre les notes d'une recette et les
         interactions existantes.
 
-    near_neighboor(self, recipes_id: list, interactions: pd.DataFrame,
+    near_neighbor(self, recipes_id: list, interactions: pd.DataFrame,
     interactions_pivot_input: pd.DataFrame) -> pd.DataFrame
         Sélectionne les utilisateurs voisins proches basés sur leurs distances
         et leurs interactions.
@@ -70,7 +70,7 @@ class User:
 
     get_preferences() -> dict
         Retourne le dictionnaire des préférences de l'utilisateur.
-    
+
     get_interactions_main() -> pd.DataFrame
         Retourne le dataset des interactions utilisateur-recette
         pour les plats principaux.
@@ -120,7 +120,7 @@ class User:
         init=False, repr=False)  # Chargé au runtime
     _interactions_dessert: pd.DataFrame = field(
         init=False, repr=False)  # Chargé au runtime
-    _near_neighboor: pd.DataFrame = field(
+    _near_neighbor: pd.DataFrame = field(
         init=False, repr=False)  # Chargé au runtime
 
     # post initialisation
@@ -148,11 +148,11 @@ class User:
         self.load_datasets()
 
         # Initialise near neighbors at None
-        self._near_neighboor = pd.DataFrame()
+        self._near_neighbor = pd.DataFrame()
 
     # static methods
     @staticmethod
-    def validity_type_of_dish(type_of_dish : str) -> None:
+    def validity_type_of_dish(type_of_dish: str) -> None:
         """
         Vérifie si le type de plat est valide.
 
@@ -174,7 +174,7 @@ class User:
                              type_of_dish}".')
 
     @staticmethod
-    def pivot_table_of_df(interactions_reduce : pd.DataFrame) -> pd.DataFrame:
+    def pivot_table_of_df(interactions_reduce: pd.DataFrame) -> pd.DataFrame:
         """
         Transforme un DataFrame d'interactions utilisateur-recette
         en une table pivotée.
@@ -202,7 +202,7 @@ class User:
         return interactions_pivot
 
     @staticmethod
-    def abs_deviation(recipes_rating : np.ndarray, interactions_pivot : pd.DataFrame) -> pd.DataFrame:
+    def abs_deviation(recipes_rating: np.ndarray, interactions_pivot: pd.DataFrame) -> pd.DataFrame:
         """
         Calcule la déviation absolue entre les préférences du
         nouvel utilisateur pour une recette et les interactions existantes.
@@ -232,8 +232,8 @@ class User:
         return interactions_abs
 
     @staticmethod
-    def near_neighboor(recipes_id : list, interactions : pd.DataFrame,\
-        interactions_pivot_input : pd.DataFrame) -> pd.DataFrame:
+    def near_neighbor(recipes_id: list, interactions: pd.DataFrame,
+                      interactions_pivot_input: pd.DataFrame) -> pd.DataFrame:
         """
         Sélectionne les utilisateurs voisins proches basés sur
         la distance et leurs interactions.
@@ -382,9 +382,9 @@ class User:
             interactions_abs = self.abs_deviation(
                 recipes_rating, interactions_pivot)
             interactions_pivot["dist"] = interactions_abs.sum(axis=1)
-            interactions_selection = self.near_neighboor(
+            interactions_selection = self.near_neighbor(
                 recipes_id, interactions, interactions_pivot)
-            self._near_neighboor = interactions_selection.index
+            self._near_neighbor = interactions_selection.index
             if interactions_selection.empty:
                 # drop recipes already in preferences
                 interactions_selection = interactions[
@@ -403,7 +403,7 @@ class User:
                     interactions_selection.sum(axis=0).idxmax())
         return recipe_suggested
 
-    def add_preferences(self, recipe_suggested : int, rating : int) -> None:
+    def add_preferences(self, recipe_suggested: int, rating: int) -> None:
         """
         Ajoute une nouvelle préférence pour une recette spécifique.
 
@@ -418,7 +418,7 @@ class User:
                      recipe_suggested} with rating {rating}")
         self._preferences[recipe_suggested] = rating
 
-    def del_preferences(self, recipe_deleted : int) -> None:
+    def del_preferences(self, recipe_deleted: int) -> None:
         """
         Supprime une préférence associée à une recette donnée.
 
@@ -464,43 +464,43 @@ class User:
 
         Raises
         ------
-        NoNeighboorError
+        NoNeighborError
             Si aucun voisin n'est disponible pour créer le graphe.
         """
         logger.debug("Getting user network graph")
 
-        if self._near_neighboor.empty:
-            logger.warning("No neighboor found")
-            raise NoNeighboorError("No neighboor found")
+        if self._near_neighbor.empty:
+            logger.warning("No neighbor found")
+            raise NoNeighborError("No neighbor found")
 
         user = "you"
         recipe_ids = [recipe_id for recipe_id,
                       rate in self._preferences.items() if rate == type]
-        near_neighboor = self._near_neighboor
+        near_neighbor = self._near_neighbor
 
         graph = nx.MultiGraph()
         graph.add_node(user)
         graph.add_nodes_from(
-            ["user: " + str(neighboor) for neighboor in near_neighboor])
+            ["user: " + str(neighbor) for neighbor in near_neighbor])
         if self.get_type_of_dish == "main":
             interactions = self.get_interactions_main
         elif self.get_type_of_dish == "dessert":
             interactions = self.get_interactions_dessert
         interactions = self.pivot_table_of_df(
-            interactions.loc[interactions['user_id'].isin(near_neighboor)])
-
+            interactions.loc[interactions['user_id'].isin(near_neighbor)])
+        recipe_ids = list(set(recipe_ids) & set(interactions.columns))
         for recipe in recipe_ids:
-            neighboor_to_edges = interactions[
+            neighbor_to_edges = interactions[
                 interactions[recipe] == type].index
-            neighboor_to_edges = ["user: " + str(neighboor)
-                                  for neighboor in neighboor_to_edges]
-            neighboor_to_edges.append(user)
-            edges = list(combinations(neighboor_to_edges, 2))
+            neighbor_to_edges = ["user: " + str(neighbor)
+                                 for neighbor in neighbor_to_edges]
+            neighbor_to_edges.append(user)
+            edges = list(combinations(neighbor_to_edges, 2))
             graph.add_edges_from(edges)
 
         return graph
 
-    def get_neighboor_data(self):
+    def get_neighbor_data(self):
         """
         Analyse les interactions entre l'utilisateur principal et ses voisins
         proches pour identifier les recettes aimées en commun, non aimées en
@@ -514,20 +514,20 @@ class User:
             - "common_dislikes" : Nombre de recettes non aimées en commun.
             - "recipes to recommend" : Nombre de recettes à recommander.
         """
-        logger.debug("Getting neighboors data")
+        logger.debug("Getting neighbors data")
 
         liked = [recipe_id for recipe_id,
                  rate in self._preferences.items() if rate == 1]
         disliked = [recipe_id for recipe_id,
                     rate in self._preferences.items() if rate == -1]
-        near_neighboor = self._near_neighboor
+        near_neighbor = self._near_neighbor
 
         if self.get_type_of_dish == "main":
             interactions = self.get_interactions_main
         elif self.get_type_of_dish == "dessert":
             interactions = self.get_interactions_dessert
         interactions = self.pivot_table_of_df(
-            interactions.loc[interactions['user_id'].isin(near_neighboor)])
+            interactions.loc[interactions['user_id'].isin(near_neighbor)])
 
         common_likes = (interactions[liked] == 1).sum(axis=1)
         common_dislikes = (interactions[disliked] == -1).sum(axis=1)
