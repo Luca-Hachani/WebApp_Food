@@ -226,9 +226,8 @@ class User:
         logger.debug(
             "Calculating absolute deviation between user \
             preferences and existing interactions")
-        norm_order = 1
-        interactions_abs = np.linalg.norm(
-            interactions_pivot-recipes_rating, ord=norm_order)
+        interactions_abs = np.abs(
+            interactions_pivot-recipes_rating)
         return interactions_abs
 
     @staticmethod
@@ -344,6 +343,24 @@ class User:
         """
         logger.debug("Getting interactions dataset for desserts")
         return self._interactions_dessert
+
+    @property
+    def get_interactions(self) -> pd.DataFrame:
+        """
+        Retourne the dataset for the current used recipes.
+
+        Returns:
+        -------
+        pd.DataFrame:
+            Dataset of interactions.
+        """
+        logger.debug("Getting interactions dataset")
+        if self.get_type_of_dish == "main":
+            interactions = self.get_interactions_main
+        elif self.get_type_of_dish == "dessert":
+            interactions = self.get_interactions_dessert
+
+        return interactions
 
     # methods
     def recipe_suggestion(self) -> int:
