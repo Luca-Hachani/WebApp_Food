@@ -227,8 +227,8 @@ class User:
             "Calculating absolute deviation between user \
             preferences and existing interactions")
         norm_order = 1
-        interactions_abs = np.abs(
-            interactions_pivot-recipes_rating)**norm_order
+        interactions_abs = np.linalg.norm(
+            interactions_pivot-recipes_rating, ord=norm_order)
         return interactions_abs
 
     @staticmethod
