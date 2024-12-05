@@ -256,7 +256,7 @@ class User:
         logger.debug(
             "Selecting near neighbors based on distance and interactions")
         user_prox_id = interactions_pivot_input.sort_values(
-            "dist").head(3).index
+            "dist").head(5).index
         interactions_prox = interactions[interactions['user_id'].isin(
             user_prox_id)]
         interactions_prox = interactions_prox[~interactions_prox['recipe_id']
@@ -553,9 +553,9 @@ class User:
         to_recommend = (remaining_recipes == 1).sum(axis=1)
 
         df = pd.DataFrame({
-            "common likes": common_likes,
-            "common dislikes": common_dislikes,
-            "recipes to recommend": to_recommend
+            "Common likes": common_likes,
+            "Common dislikes": common_dislikes,
+            "Recipes to recommend": to_recommend
         })
 
         return df

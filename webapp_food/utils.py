@@ -1,5 +1,7 @@
 """ This module contains utility functions for the webapp_food module.
-    The functions are used to search for recipe images on Google."""
+    The functions are used to search for recipe images on Google,
+    Transform graphs from Networkx to pyvis, interact between
+    the app and the user class, define errors."""
 from ast import literal_eval
 import re
 import requests
@@ -83,7 +85,7 @@ def visualize_graph(graph):
                  nodes and {len(graph.edges)} edges")
     # Create a PyVis Network object
     net = Network(notebook=True, width="100%",
-                  height="600px", cdn_resources='remote')
+                  height="300px", cdn_resources='remote')
 
     # Convert NetworkX graph to PyVis
     net.from_nx(graph)

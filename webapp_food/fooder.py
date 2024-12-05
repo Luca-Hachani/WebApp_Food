@@ -10,6 +10,7 @@ from webapp_food.user_fooder import User
 import pandas as pd
 import logging
 from webapp_food.settings import COLORS, LIKE, DISLIKE
+import plotly.graph_objects as go
 
 # Page configuration
 st.set_page_config(
@@ -115,7 +116,6 @@ st.markdown(
         div.stButton {
             display: flex;
             justify-content: center;
-            color: COLORS['second_color'];
         }
         div.stButton > button {
             padding: 20px 40px;
@@ -225,14 +225,19 @@ else:
     st.session_state.last_recommended_index = \
         st.session_state.user.recipe_suggestion()
     st.write(
-        """
-        Fooder is a food recommendation website.
-        You can like or dislike the recipes proposed to you
-        to update the next food recommendation.
-        """
-    )
+        f"""
+        <div style="text-align: justify; font-size:20px; color: {COLORS['first_color']}; font-weight: bold">
+        Fooder is a food recommendation website based on a nearest neighbors algorithm.
+        Next recipe is recommended in function of your nearest neighbors,
+        depending on you and the other users likes and dislikes.
+        Other users's preferences come from a dataset of recipes leaked from Fooder.com.
+        On this page you can see your adjency graph with the users that are closest to you,
+        as well as the number of recipes they can still recommend to you.
+        <br><br>
+        </div>
+        """, unsafe_allow_html=True)
     st.sidebar.button("Back", key="back")
-    col1, col2 = st.columns([4, 2], gap="small")
+    col1, col2 = st.columns([2, 2], gap="small")
     try:
         graph_to_plot = st.session_state.user.get_graph(
             st.session_state.graph_type)
@@ -254,23 +259,22 @@ else:
         with open("webapp_food/graphs/neighbour.html", "r", encoding="utf-8") as f:
             html_content = f.read()
         with col1:
-            st.components.v1.html(html_content, height=500)
+            st.components.v1.html(html_content, height=300)
             col11, col12 = st.columns(2)
             col11.button('Graph of Likes neighbors', key='like_graph')
             col12.button('Graph of Dislikes neighbors', key='dislike_graph')
         with col2:
-            st.write(
-                """
-                <div style="text-align: center;">
-                    <br><br><br>
-                    The graph shows the relationships between you and other users.
-                    <br><br>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-
-
+            neighbors_data = st.session_state.user.get_neighbor_data()
+            neighbors_data.insert(0, 'User', neighbors_data.index)
+            fig = go.Figure(data=[go.Table(
+                columnwidth=[1] * len(neighbors_data.columns),
+                header=dict(values=list(neighbors_data.columns),
+                            align='left', font=dict(size=14), height=30),
+                cells=dict(values=[neighbors_data[col] for col in neighbors_data.columns],
+                           align='left', font=dict(size=14), height=30)
+            )])
+            fig.update_layout(margin=dict(t=0))
+            st.plotly_chart(fig, use_container_width=True)
 # At the end of the page, put the logo centered
 col1, col2, col3, col4, col5 = st.columns(5)
 col3.image("img/fooder_logo2.png", use_container_width=True)
