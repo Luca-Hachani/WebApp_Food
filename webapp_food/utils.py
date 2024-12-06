@@ -8,6 +8,7 @@ import requests
 from bs4 import BeautifulSoup
 import logging
 from pyvis.network import Network
+from webapp_food.settings import RECIPE_COLUMNS
 
 # use the requests library to search for images on Google
 logger = logging.getLogger(__name__)
@@ -69,8 +70,8 @@ def fetch_recipe_details(recipes_df, recipe_index):
     """Fetch recipe details (steps and ingredients)."""
     logger.debug(f"Fetching recipe details for recipe_index={recipe_index}")
     recipe = recipes_df.loc[recipe_index]
-    steps = literal_eval(recipe['steps'])
-    ingredients = literal_eval(recipe['ingredients'])
+    steps = literal_eval(recipe[RECIPE_COLUMNS[2]])
+    ingredients = literal_eval(recipe[RECIPE_COLUMNS[4]])
     return steps, ingredients
 
 

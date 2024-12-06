@@ -2,6 +2,7 @@ import pytest
 from webapp_food.utils import print_image, ImageError, \
     update_preferences, fetch_recipe_details
 import pandas as pd
+from webapp_food.settings import LIKE
 
 
 def test_search_images_mocked(mocker):
@@ -48,8 +49,8 @@ def test_request_timeout(mocker):
 
 def test_update_preferences(mocker):
     user = mocker.MagicMock()
-    update_preferences(user, 1, 1)
-    user.add_preferences.assert_called_once_with(1, 1)
+    update_preferences(user, 1, LIKE)
+    user.add_preferences.assert_called_once_with(1, LIKE)
 
 
 def test_fetch_recipe_details():
