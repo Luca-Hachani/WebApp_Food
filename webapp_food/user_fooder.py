@@ -510,9 +510,9 @@ class User:
             for user in range(1, len(list_user)):
                 interactions_reduced = interactions.loc[
                     [list_user[0], list_user[user]]]
-                interactions_reduced = interactions_reduced.map(
-                    lambda x: type if x == type else 0)
                 interactions_filtered = interactions_reduced.loc[
+                    :, (interactions_reduced == 1).any(axis=0)]
+                interactions_filtered = interactions_filtered.loc[
                     :, (interactions_reduced != 0).any(axis=0)]
                 dist = self.abs_deviation(
                     interactions_filtered.loc[list_user[0]],
@@ -524,16 +524,13 @@ class User:
 
             list_user = list_user[1:]
 
-        isolated_nodes = list(nx.isolates(graph))
-
-        if "user 0" in isolated_nodes:
-            graph.clear()
-            graph.add_node("user 0")
-
-        else:
-            graph.remove_nodes_from(isolated_nodes)
-
         graph = nx.relabel_nodes(graph, {"user 0": "you"}, copy=False)
+
+        connected_nodes = set(graph.neighbors("you"))
+        connected_nodes.add("you")
+        unconnected_nodes = [
+            node for node in graph.nodes if node not in connected_nodes]
+        graph.remove_nodes_from(unconnected_nodes)
 
         return graph
 
