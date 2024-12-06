@@ -61,11 +61,15 @@ poetry shell
 streamlit run webapp_food/fooder.py
 ```
 
-0r outside of poetry:
+Or outside of poetry:
 ```bash
 poetry run streamlit run webapp_food/fooder.py
 ```
 
+## Future modifications
+
+If you want to change the datasets used you may need to install Git LFS on your machine. 
+Procedure to do so can be found [here](https://docs.github.com/en/repositories/working-with-files/managing-large-files/installing-git-large-file-storage).
 
 ## Context of this project
 
