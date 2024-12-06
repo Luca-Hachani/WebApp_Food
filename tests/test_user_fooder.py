@@ -139,13 +139,14 @@ def test_get_graph(setup_user):
     user.recipe_suggestion()
 
     graph = user.get_graph(LIKE)
+    print(graph.edges)
     assert len(graph.nodes) == 2
-    assert len(graph.edges) == LIKE
-    assert ("you", "user: 4") in graph.edges or (
-        "user: 4", "you") in graph.edges
+    assert len(graph.edges) == 1
+    assert ("you", "user 4", "102") in graph.edges or (
+        "user 4", "you", "102") in graph.edges
 
     graph = user.get_graph(DISLIKE)
-    assert len(graph.nodes) == 2
+    assert len(graph.nodes) == 1
     assert len(graph.edges) == 0
 
 
@@ -160,6 +161,6 @@ def test_common_likes(setup_user):
 
     df = user.get_neighbor_data()
 
-    assert df.loc[4, "common likes"] == 1
-    assert df.loc[4, "common dislikes"] == 0
-    assert df.loc[4, "recipes to recommend"] == 1
+    assert df.loc[4, "Common likes"] == 1
+    assert df.loc[4, "Common dislikes"] == 0
+    assert df.loc[4, "Recipes to recommend"] == 1

@@ -3,7 +3,6 @@ Module contenant la classe User pour la recommandation de recettes.
 """
 # Importation des librairies
 from dataclasses import dataclass, field
-from itertools import combinations
 from webapp_food.utils import NoNeighborError
 import numpy as np
 import pandas as pd
@@ -381,11 +380,7 @@ class User:
         voisins proches.
         """
         logger.debug("Proposing a recipe suggestion for user")
-        interactions = None
-        if self._type_of_dish == "main":
-            interactions = self.get_interactions_main
-        elif self._type_of_dish == "dessert":
-            interactions = self.get_interactions_dessert
+        interactions = self.get_interactions
         if len(self._preferences) == 0:
             logger.info('user new historic is empty')
             recipe_suggested = interactions["recipe_id"].sample(n=1).iloc[0]
@@ -490,30 +485,55 @@ class User:
             logger.warning("No neighbor found")
             raise NoNeighborError("No neighbor found")
 
-        user = "you"
         recipe_ids = [recipe_id for recipe_id,
                       rate in self._preferences.items() if rate == type]
         near_neighbor = self._near_neighbor
-
-        graph = nx.MultiGraph()
-        graph.add_node(user)
-        graph.add_nodes_from(
-            ["user: " + str(neighbor) for neighbor in near_neighbor])
-        if self.get_type_of_dish == "main":
-            interactions = self.get_interactions_main
-        elif self.get_type_of_dish == "dessert":
-            interactions = self.get_interactions_dessert
+        interactions = self.get_interactions
         interactions = self.pivot_table_of_df(
             interactions.loc[interactions['user_id'].isin(near_neighbor)])
-        recipe_ids = list(set(recipe_ids) & set(interactions.columns))
-        for recipe in recipe_ids:
-            neighbor_to_edges = interactions[
-                interactions[recipe] == type].index
-            neighbor_to_edges = ["user: " + str(neighbor)
-                                 for neighbor in neighbor_to_edges]
-            neighbor_to_edges.append(user)
-            edges = list(combinations(neighbor_to_edges, 2))
-            graph.add_edges_from(edges)
+        missing_recipes = set(recipe_ids) - set(interactions.columns)
+        for recipe in missing_recipes:
+            interactions[recipe] = 0
+
+        graph = nx.MultiGraph()
+
+        user = pd.Series(0, index=interactions.columns)
+        user[recipe_ids] = type
+        interactions = pd.concat(
+            [pd.DataFrame([user], index=[0]), interactions])
+
+        list_user = (interactions.index).to_list()
+        graph.add_nodes_from(
+            ["user " + str(neighbor) for neighbor in list_user])
+
+        while list_user:
+            for user in range(1, len(list_user)):
+                interactions_reduced = interactions.loc[
+                    [list_user[0], list_user[user]]]
+                interactions_reduced = interactions_reduced.map(
+                    lambda x: type if x == type else 0)
+                interactions_filtered = interactions_reduced.loc[
+                    :, (interactions_reduced != 0).any(axis=0)]
+                dist = self.abs_deviation(
+                    interactions_filtered.loc[list_user[0]],
+                    interactions_filtered.loc[list_user[user]])
+                recipes_with_edge = dist[dist == 0].index.to_list()
+                for recipe in recipes_with_edge:
+                    graph.add_edge(f"user {list_user[0]}",
+                                   f"user {list_user[user]}", key=f"{recipe}")
+
+            list_user = list_user[1:]
+
+        isolated_nodes = list(nx.isolates(graph))
+
+        if "user 0" in isolated_nodes:
+            graph.clear()
+            graph.add_node("user 0")
+
+        else:
+            graph.remove_nodes_from(isolated_nodes)
+
+        graph = nx.relabel_nodes(graph, {"user 0": "you"}, copy=False)
 
         return graph
 
@@ -539,12 +559,12 @@ class User:
                     rate in self._preferences.items() if rate == -1]
         near_neighbor = self._near_neighbor
 
-        if self.get_type_of_dish == "main":
-            interactions = self.get_interactions_main
-        elif self.get_type_of_dish == "dessert":
-            interactions = self.get_interactions_dessert
+        interactions = self.get_interactions
         interactions = self.pivot_table_of_df(
             interactions.loc[interactions['user_id'].isin(near_neighbor)])
+        missing_recipes = set(liked+disliked) - set(interactions.columns)
+        for recipe in missing_recipes:
+            interactions[recipe] = 0
 
         common_likes = (interactions[liked] == 1).sum(axis=1)
         common_dislikes = (interactions[disliked] == -1).sum(axis=1)
