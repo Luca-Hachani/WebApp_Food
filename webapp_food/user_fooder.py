@@ -23,27 +23,32 @@ class User:
 
     Attributes
     ----------
-    _type_of_dish : str
+    __type_of_dish : str
         The preferred type of dish for the user (must be "main" or "dessert").
 
-    _preferences : dict
+    __preferences : dict
         A dictionary containing the user's preferences,
         where the keys are recipe IDs and the values are the ratings given
         (default: empty dictionary).
 
-    _interactions_main : pd.DataFrame
+    __interactions_main : pd.DataFrame
         Dataset containing user-recipe interactions for main dishes
         (dynamically loaded).
 
-    _interactions_dessert : pd.DataFrame
+    __interactions_dessert : pd.DataFrame
         Dataset containing user-recipe interactions for desserts
         (dynamically loaded).
 
+    __near_neighbor : pd.DataFrame
+        DataFrame containing the user IDs of nearby users.
+
     Methods
     -------
-    __post_init__() -> None
-        Method executed after initialization to validate the dish type
-        and load datasets.
+    __init__(type_of_dish: str, test: bool = False,
+            df_main: pd.DataFrame = None,
+            df_dessert: pd.DataFrame = None) -> None
+        Initializes a new user with a preferred type of dish and optionally
+        loads test datasets.
 
     validity_type_of_dish(type_of_dish: str) -> None
         Checks if the dish type is valid ("main" or "dessert").
@@ -53,14 +58,15 @@ class User:
         Converts a DataFrame of interactions into a pivot table with user IDs
         as rows and recipe IDs as columns.
 
-    abs_deviation(recipes_rating: np.ndarray, interactions_pivot: pd.DataFrame)
-    -> pd.DataFrame
+    abs_deviation(recipes_rating: np.ndarray,
+    interactions_pivot: pd.DataFrame) -> pd.DataFrame
         Calculates the absolute deviation between recipe ratings and
         existing interactions.
 
-    near_neighbor(self, recipes_id: list, interactions: pd.DataFrame,
-    interactions_pivot_input: pd.DataFrame) -> pd.DataFrame
-        Selects close neighbor users based on their distances and interactions.
+    near_neighbor(recipes_id: list, interactions: pd.DataFrame,
+                  interactions_pivot_input: pd.DataFrame) -> pd.DataFrame
+        Selects close neighbor users based on their distances
+        and interactions.
 
     load_datasets() -> None
         Loads datasets for main dishes and desserts, if not already loaded.
@@ -71,11 +77,12 @@ class User:
     get_preferences() -> dict
         Returns the user's preferences dictionary.
 
-    get_interactions_main() -> pd.DataFrame
-        Returns the dataset of user-recipe interactions for main dishes.
+    get_interactions() -> pd.DataFrame
+        Returns the dataset of user-recipe interactions for the current type
+        of dish.
 
-    get_interactions_dessert() -> pd.DataFrame
-        Returns the dataset of user-recipe interactions for desserts.
+    get_near_neighbor() -> pd.DataFrame
+        Returns the DataFrame of near neighbors.
 
     recipe_suggestion() -> int
         Suggests a recipe based on the user's preferences and existing
@@ -87,6 +94,14 @@ class User:
     del_preferences(recipe_deleted: int) -> None
         Removes a preference associated with a specific recipe.
 
+    get_graph(type: int) -> nx.MultiGraph
+        Generates a user interaction graph based on preferences and recipes.
+
+    get_neighbor_data(type: int) -> pd.DataFrame
+        Analyzes interactions between the main user and their close neighbors
+        to identify commonly liked recipes, commonly disliked recipes, and
+        recipes to recommend.
+
     Notes
     -----
     - Interactions are stored in CSV files, loaded at runtime.
@@ -96,7 +111,7 @@ class User:
     Example
     -------
     #1 Create a user for main dishes :
-    user = User(_type_of_dish="main")
+    user = User(type_of_dish="main")
 
     #2 Suggest a recipe :
     suggestion = user.recipe_suggestion()
@@ -104,45 +119,54 @@ class User:
     #3 Add a preference :
     user.add_preferences(recipe_suggested=123, rating=+1/-1)
 
-    #* Remove a preference :
+    #4 Remove a preference :
     user.del_preferences(recipe_deleted=123)
     """
 
-    _type_of_dish: str  # Attribut protégé d'instance
-    # Attribut protégé d'instance
-    _preferences: dict = field(default_factory=dict)
-    _interactions_main: pd.DataFrame = field(
-        init=False, repr=False)  # Chargé au runtime
-    _interactions_dessert: pd.DataFrame = field(
-        init=False, repr=False)  # Chargé au runtime
-    _near_neighbor: pd.DataFrame = field(
-        init=False, repr=False)  # Chargé au runtime
+    __type_of_dish: str
+    __preferences: dict = field(default_factory=dict)
+    __interactions_main: pd.DataFrame = field(
+        init=False, repr=False)
+    __interactions_dessert: pd.DataFrame = field(
+        init=False, repr=False)
+    __near_neighbor: pd.DataFrame = field(
+        init=False, repr=False)
 
-    # post initialisation
-    def __post_init__(self) -> None:
+    # init
+
+    def __init__(self, type_of_dish: str, test: bool = False,
+                 df_main: pd.DataFrame = None,
+                 df_dessert: pd.DataFrame = None)\
+            -> None:
         """
-        Executed after the class initialization.
+        Initializes a new user with a preferred type of dish.
 
-        Validates the dish type and loads interaction datasets for
-        main dishes and desserts.
+        Parameters
+        ----------
+        type_of_dish : str
+            The preferred type of dish for the user ("main" or "dessert").
 
         Raises
         ------
         ValueError
-            If the dish type (_type_of_dish) is invalid.
+            If the dish type is invalid.
         """
-        logger.debug(
-            "User instance created, \
-            checking type of dish and loading datasets")
+        logger.debug(f"Creating a new user for {type_of_dish} dishes")
+        self.__type_of_dish = type_of_dish
+        self.__preferences = {}
         # Test dish type validity
-        self.validity_type_of_dish(self._type_of_dish)
+        self.validity_type_of_dish(self.get_type_of_dish)
         # Load the datasets only once to avoid unnecessary overhead.
-        self.load_datasets()
-
+        if not test:
+            self.load_datasets()
+        else:
+            self.__interactions_main = df_main
+            self.__interactions_dessert = df_dessert
         # Initialise near neighbors at None
-        self._near_neighbor = pd.DataFrame()
+        self.__near_neighbor = pd.DataFrame()
 
     # static methods
+
     @staticmethod
     def validity_type_of_dish(type_of_dish: str) -> None:
         """
@@ -195,8 +219,8 @@ class User:
     def abs_deviation(recipes_rating: np.ndarray,
                       interactions_pivot: pd.DataFrame) -> pd.DataFrame:
         """
-        Computes the absolute deviation between a new user's recipe preferences
-        and existing interactions.
+        Computes the absolute deviation between a new user's
+        recipe preferences and existing interactions.
 
         Parameters
         ----------
@@ -269,14 +293,15 @@ class User:
 
         """
         logger.debug("Loading datasets for main dishes and desserts")
-        if not hasattr(cls, "_interactions_main") or \
-                not hasattr(cls, "_interactions_dessert"):
-            cls._interactions_main = pd.read_csv(
+        if not hasattr(cls, "__interactions_main") or \
+                not hasattr(cls, "__interactions_dessert"):
+            cls.__interactions_main = pd.read_csv(
                 USER_MAIN_DF, sep=',')
-            cls._interactions_dessert = pd.read_csv(
+            cls.__interactions_dessert = pd.read_csv(
                 USER_DESSERT_DF, sep=',')
 
-    # property methods
+    # Getters
+
     @property
     def get_type_of_dish(self) -> str:
         """
@@ -288,7 +313,7 @@ class User:
             The type of dish ("main" or "dessert").
         """
         logger.debug("Getting type of dish for user")
-        return self._type_of_dish
+        return self.__type_of_dish
 
     @property
     def get_preferences(self) -> dict:
@@ -301,38 +326,12 @@ class User:
             A dictionary where keys are recipe IDs and values are the ratings.
         """
         logger.debug("Getting preferences for user")
-        return self._preferences
-
-    @property
-    def get_interactions_main(self) -> pd.DataFrame:
-        """
-        Returns the dataset of user-recipe interactions for main dishes.
-
-        Returns
-        -------
-        pd.DataFrame
-            The dataset of interactions for main dishes.
-        """
-        logger.debug("Getting interactions dataset for main dishes")
-        return self._interactions_main
-
-    @property
-    def get_interactions_dessert(self) -> pd.DataFrame:
-        """
-        Returns the dataset of user-recipe interactions for desserts.
-
-        Returns
-        -------
-        pd.DataFrame
-            The dataset of interactions for desserts.
-        """
-        logger.debug("Getting interactions dataset for desserts")
-        return self._interactions_dessert
+        return self.__preferences
 
     @property
     def get_interactions(self) -> pd.DataFrame:
         """
-        Retourne the dataset for the current used recipes.
+        Returns the dataset for the current type of dish.
 
         Returns:
         -------
@@ -341,13 +340,27 @@ class User:
         """
         logger.debug("Getting interactions dataset")
         if self.get_type_of_dish == TYPE_OF_DISH[0]:
-            interactions = self._interactions_main
+            interactions = self.__interactions_main
         elif self.get_type_of_dish == TYPE_OF_DISH[1]:
-            interactions = self._interactions_dessert
+            interactions = self.__interactions_dessert
 
         return interactions
 
+    @property
+    def get_near_neighbor(self) -> pd.DataFrame:
+        """
+        Returns the DataFrame of near neighbors.
+
+        Returns
+        -------
+        pd.DataFrame
+            DataFrame containing the user IDs of nearby users.
+        """
+        logger.debug("Getting near neighbors")
+        return self.__near_neighbor
+
     # methods
+
     def recipe_suggestion(self) -> int:
         """
         Suggests a recipe based on the new user's preferences and
@@ -366,14 +379,15 @@ class User:
         """
         logger.debug("Proposing a recipe suggestion for user")
         interactions = self.get_interactions
-        if len(self._preferences) == 0:
+        preferences = self.get_preferences
+        if len(preferences) == 0:
             logger.info('user new historic is empty')
             recipe_suggested = interactions[
                 USER_COLUMNS[1]].sample(n=1).iloc[0]
         else:
-            recipes_id = list(self._preferences.keys())
+            recipes_id = list(preferences.keys())
             recipes_rating = np.array(
-                list(self._preferences.values())).reshape(1, -1)
+                list(preferences.values())).reshape(1, -1)
             interactions_reduce = interactions[
                 interactions[USER_COLUMNS[1]].isin(
                     recipes_id)]
@@ -383,7 +397,7 @@ class User:
             interactions_pivot["dist"] = interactions_abs.sum(axis=1)
             interactions_selection = self.near_neighbor(
                 recipes_id, interactions, interactions_pivot)
-            self._near_neighbor = interactions_selection.index
+            self.__near_neighbor = interactions_selection.index
             if interactions_selection.empty:
                 # drop recipes already in preferences
                 interactions_selection = interactions[
@@ -393,8 +407,8 @@ class User:
                     raise ValueError('No more recipes to suggest.')
                 else:
                     logger.info(
-                        'No more recipes to suggest from the user preferences,\
-                        suggesting a random recipe')
+                        'No more recipes to suggest from the \
+                        user preferences, suggesting a random recipe')
                     recipe_suggested = \
                         interactions_selection[
                             USER_COLUMNS[1]].sample(n=1).iloc[0]
@@ -416,7 +430,7 @@ class User:
         """
         logger.debug(f"Adding a new preference for recipe {
                      recipe_suggested} with rating {rating}")
-        self._preferences[recipe_suggested] = rating
+        self.__preferences[recipe_suggested] = rating
 
     def del_preferences(self, recipe_deleted: int) -> None:
         """
@@ -433,8 +447,8 @@ class User:
             If the recipe ID does not exist in the user's preferences.
         """
         logger.debug(f"Deleting preference for recipe {recipe_deleted}")
-        if recipe_deleted in self._preferences:
-            del self._preferences[recipe_deleted]
+        if recipe_deleted in self.get_preferences:
+            del self.__preferences[recipe_deleted]
         else:
             logger.info(f'Recipe ID {recipe_deleted} not in user preferences')
             raise KeyError(
@@ -443,38 +457,35 @@ class User:
 
     def get_graph(self, type: int) -> nx.MultiGraph:
         """
-        Génère un graphe d'interactions utilisateur basé sur les préférences
-        et les recettes.
+        Generates a user interaction graph based on preferences and recipes.
 
-        Chaque nœud est un utilisateur (vous-même ou vos voisins proches)
-        et chaque arête représente une recette ayant la même note
-        entre deux utilisateurs.
+        Each node is a user (yourself or your close neighbors) and each edge
+        represents a recipe with the same rating between two users.
 
         Parameters
         ----------
         type : int
-            - `1` : Recettes aimées.
-            - `-1` : Recettes non aimées.
+            - `1` : Liked recipes.
+            - `-1` : Disliked recipes.
 
         Returns
         -------
         nx.MultiGraph
-            Graphe des interactions utilisateur.
+            User interaction graph.
 
         Raises
         ------
         NoNeighborError
-            Si aucun voisin n'est disponible pour créer le graphe.
+            If no neighbors are available to create the graph.
         """
         logger.debug("Getting user network graph")
 
-        if self._near_neighbor.empty:
+        near_neighbor = self.get_near_neighbor
+        if near_neighbor.empty:
             logger.warning("No neighbor found")
             raise NoNeighborError("No neighbor found")
-
         recipe_ids = [recipe_id for recipe_id,
-                      rate in self._preferences.items() if rate == type]
-        near_neighbor = self._near_neighbor
+                      rate in self.__preferences.items() if rate == type]
         interactions = self.get_interactions
         interactions = self.pivot_table_of_df(
             interactions.loc[
@@ -509,7 +520,6 @@ class User:
                 for recipe in recipes_with_edge:
                     graph.add_edge(f"user {list_user[0]}",
                                    f"user {list_user[user]}", key=f"{recipe}")
-
             list_user = list_user[1:]
 
         graph = nx.relabel_nodes(graph, {"user 0": "you"}, copy=False)
@@ -524,25 +534,25 @@ class User:
 
     def get_neighbor_data(self, type):
         """
-        Analyse les interactions entre l'utilisateur principal et ses voisins
-        proches pour identifier les recettes aimées en commun, non aimées en
-        commun, et les recettes à recommander.
+        Analyzes interactions between the main user and their close neighbors
+        to identify commonly liked recipes, commonly disliked recipes, and
+        recipes to recommend.
 
         Returns
         -------
         pd.DataFrame
-            DataFrame avec les colonnes :
-            - "common_likes" : Nombre de recettes aimées en commun.
-            - "common_dislikes" : Nombre de recettes non aimées en commun.
-            - "recipes to recommend" : Nombre de recettes à recommander.
+            DataFrame with columns:
+            - "Common_likes": Number of commonly liked recipes.
+            - "Common_dislikes": Number of commonly disliked recipes.
+            - "Recipes to recommend": Number of recipes to recommend.
         """
         logger.debug("Getting neighbors data")
 
         liked = [recipe_id for recipe_id,
-                 rate in self._preferences.items() if rate == LIKE]
+                 rate in self.get_preferences.items() if rate == LIKE]
         disliked = [recipe_id for recipe_id,
-                    rate in self._preferences.items() if rate == DISLIKE]
-        near_neighbor = self._near_neighbor
+                    rate in self.get_preferences.items() if rate == DISLIKE]
+        near_neighbor = self.get_near_neighbor
 
         interactions = self.get_interactions
         interactions = self.pivot_table_of_df(
@@ -565,7 +575,7 @@ class User:
         })
 
         df = df.sort_values(
-            by=(NEIGHBOR_DATA[0] if type == 1 else NEIGHBOR_DATA[1]),
+            by=(NEIGHBOR_DATA[0] if type == LIKE else NEIGHBOR_DATA[1]),
             ascending=False)
 
         return df

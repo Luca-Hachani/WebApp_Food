@@ -22,12 +22,10 @@ def setup_user():
         USER_COLUMNS[2]: [LIKE, DISLIKE]
     })
 
-    # User CSV simulation
-    uf.User._interactions_main = main_data
-    uf.User._interactions_dessert = dessert_data
-
     # User creation
-    user = uf.User(_type_of_dish="main")
+    user = uf.User(type_of_dish="main", test=True,
+                   df_main=main_data, df_dessert=dessert_data)
+
     return user
 
 # Test `validity_type_of_dish`
@@ -101,14 +99,14 @@ def test_recipe_suggestion(setup_user):
     # Test if the user as no preferences
     user = setup_user
     recipe_suggested = user.recipe_suggestion()
-    assert recipe_suggested in user.get_interactions_main[
+    assert recipe_suggested in user.get_interactions[
         USER_COLUMNS[1]].values
     assert recipe_suggested not in user.get_preferences.keys()
     # Test if the user has no near neighbors
     user.add_preferences(101, LIKE)
     recipe_suggested = user.recipe_suggestion()
     assert recipe_suggested not in user.get_preferences.keys()
-    assert recipe_suggested in user.get_interactions_main[
+    assert recipe_suggested in user.get_interactions[
         USER_COLUMNS[1]].values
     # Test if all recipes have been suggested
     user.add_preferences(102, DISLIKE)
@@ -128,6 +126,8 @@ def test_get_graph_no_neighbors(setup_user):
         user.get_graph(LIKE)
 
     user.add_preferences(101, LIKE)
+    print(user.get_preferences)
+    print(user.get_interactions)
     user.recipe_suggestion()
 
     with pytest.raises(uf.NoNeighborError, match="No neighbor found"):

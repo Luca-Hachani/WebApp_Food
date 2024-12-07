@@ -3,7 +3,7 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Explanation of Recipe Suggestion" href="algo_recipe_suggestion.html" /><link rel="prev" title="webapp_food" href="modules.html" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Explanation of Preprocessing" href="preprocessing.html" /><link rel="prev" title="webapp_food" href="modules.html" />
 
     <!-- Generated with Sphinx 8.1.3 and Furo 2024.08.06 -->
         <title>webapp_food package - Fooder 1.0.0 documentation</title>
@@ -210,7 +210,9 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Algorithm Details:</span></p>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="preprocessing.html">Explanation of Preprocessing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="algo_recipe_suggestion.html">Explanation of Recipe Suggestion</a></li>
+<li class="toctree-l1"><a class="reference internal" href="graph.html">Explanation of Graph Page</a></li>
 </ul>
 
 </div>
@@ -259,336 +261,27 @@
 <section id="webapp-food-fooder-module">
 <h2>webapp_food.fooder module<a class="headerlink" href="#webapp-food-fooder-module" title="Link to this heading">¶</a></h2>
 </section>
-<section id="module-webapp_food.user_fooder">
-<span id="webapp-food-user-fooder-module"></span><h2>webapp_food.user_fooder module<a class="headerlink" href="#module-webapp_food.user_fooder" title="Link to this heading">¶</a></h2>
-<p>Module containing the User class for recipe recommendations.</p>
-<dl class="py class">
-<dt class="sig sig-object py" id="webapp_food.user_fooder.User">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">webapp_food.user_fooder.</span></span><span class="sig-name descname"><span class="pre">User</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_type_of_dish:</span> <span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_preferences:</span> <span class="pre">dict</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/webapp_food/user_fooder.html#User"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#webapp_food.user_fooder.User" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Class representing a user and their interactions with recipes,
-particularly for suggesting recipes based on their preferences.</p>
-<section id="attributes">
-<h3>Attributes<a class="headerlink" href="#attributes" title="Link to this heading">¶</a></h3>
-<dl class="simple">
-<dt>_type_of_dish<span class="classifier">str</span></dt><dd><p>The preferred type of dish for the user (must be “main” or “dessert”).</p>
-</dd>
-<dt>_preferences<span class="classifier">dict</span></dt><dd><p>A dictionary containing the user’s preferences,
-where the keys are recipe IDs and the values are the ratings given
-(default: empty dictionary).</p>
-</dd>
-<dt>_interactions_main<span class="classifier">pd.DataFrame</span></dt><dd><p>Dataset containing user-recipe interactions for main dishes
-(dynamically loaded).</p>
-</dd>
-<dt>_interactions_dessert<span class="classifier">pd.DataFrame</span></dt><dd><p>Dataset containing user-recipe interactions for desserts
-(dynamically loaded).</p>
-</dd>
-</dl>
-</section>
-<section id="methods">
-<h3>Methods<a class="headerlink" href="#methods" title="Link to this heading">¶</a></h3>
-<dl class="simple">
-<dt>__post_init__() -&gt; None</dt><dd><p>Method executed after initialization to validate the dish type
-and load datasets.</p>
-</dd>
-<dt>validity_type_of_dish(type_of_dish: str) -&gt; None</dt><dd><p>Checks if the dish type is valid (“main” or “dessert”).
-Raises an error if invalid.</p>
-</dd>
-<dt>pivot_table_of_df(interactions_reduce: pd.DataFrame) -&gt; pd.DataFrame</dt><dd><p>Converts a DataFrame of interactions into a pivot table with user IDs
-as rows and recipe IDs as columns.</p>
-</dd>
-</dl>
-<p>abs_deviation(recipes_rating: np.ndarray, interactions_pivot: pd.DataFrame)
--&gt; pd.DataFrame</p>
-<blockquote>
-<div><p>Calculates the absolute deviation between recipe ratings and
-existing interactions.</p>
-</div></blockquote>
-<p>near_neighboor(recipes_id: list, interactions: pd.DataFrame,
-interactions_pivot_input: pd.DataFrame) -&gt; pd.DataFrame</p>
-<blockquote>
-<div><p>Selects close neighbor users based on their distances and interactions.</p>
-</div></blockquote>
-<dl class="simple">
-<dt>load_datasets() -&gt; None</dt><dd><p>Loads datasets for main dishes and desserts, if not already loaded.</p>
-</dd>
-<dt>get_type_of_dish() -&gt; str</dt><dd><p>Returns the user’s preferred type of dish.</p>
-</dd>
-<dt>get_preferences() -&gt; dict</dt><dd><p>Returns the user’s preferences dictionary.</p>
-</dd>
-<dt>get_interactions_main() -&gt; pd.DataFrame</dt><dd><p>Returns the dataset of user-recipe interactions for main dishes.</p>
-</dd>
-<dt>get_interactions_dessert() -&gt; pd.DataFrame</dt><dd><p>Returns the dataset of user-recipe interactions for desserts.</p>
-</dd>
-<dt>recipe_suggestion() -&gt; int</dt><dd><p>Suggests a recipe based on the user’s preferences and existing
-interactions. If no preferences exist, a random recipe is suggested.</p>
-</dd>
-<dt>add_preferences(recipe_suggested: int, rating: int) -&gt; None</dt><dd><p>Adds a preference for a specific recipe with a given rating.</p>
-</dd>
-<dt>del_preferences(recipe_deleted: int) -&gt; None</dt><dd><p>Removes a preference associated with a specific recipe.</p>
-</dd>
-</dl>
-</section>
-<section id="notes">
-<h3>Notes<a class="headerlink" href="#notes" title="Link to this heading">¶</a></h3>
-<ul class="simple">
-<li><p>Interactions are stored in CSV files, loaded at runtime.</p></li>
-<li><p>The <cite>recipe_suggestion</cite> method implements a simple recommendation system
-based on user similarity using absolute distances.</p></li>
-</ul>
-</section>
-<section id="example">
-<h3>Example<a class="headerlink" href="#example" title="Link to this heading">¶</a></h3>
-<p>#1 Create a user for main dishes :
-user = User(_type_of_dish=”main”)</p>
-<p>#2 Suggest a recipe :
-suggestion = user.recipe_suggestion()</p>
-<p>#3 Add a preference :
-user.add_preferences(recipe_suggested=123, rating=+1/-1)</p>
-<p>#* Remove a preference :
-user.del_preferences(recipe_deleted=123)</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="webapp_food.user_fooder.User.__post_init__">
-<span class="sig-name descname"><span class="pre">__post_init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/webapp_food/user_fooder.html#User.__post_init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#webapp_food.user_fooder.User.__post_init__" title="Link to this definition">¶</a></dt>
-<dd><p>Executed after the class initialization.</p>
-<p>Validates the dish type and loads interaction datasets for
-main dishes and desserts.</p>
-<section id="raises">
-<h4>Raises<a class="headerlink" href="#raises" title="Link to this heading">¶</a></h4>
-<dl class="simple">
-<dt>ValueError</dt><dd><p>If the dish type (_type_of_dish) is invalid.</p>
-</dd>
-</dl>
-</section>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="webapp_food.user_fooder.User.abs_deviation">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">abs_deviation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">recipes_rating</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interactions_pivot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="_modules/webapp_food/user_fooder.html#User.abs_deviation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#webapp_food.user_fooder.User.abs_deviation" title="Link to this definition">¶</a></dt>
-<dd><p>Computes the absolute deviation between a new user’s recipe preferences
-and existing interactions.</p>
-<section id="parameters">
-<h4>Parameters<a class="headerlink" href="#parameters" title="Link to this heading">¶</a></h4>
-<dl class="simple">
-<dt>recipes_rating<span class="classifier">np.ndarray</span></dt><dd><p>Preferences assigned to recipes by the new user (1D array).</p>
-</dd>
-<dt>interactions_pivot<span class="classifier">pd.DataFrame</span></dt><dd><p>Pivot table of interactions containing user ratings for
-each recipe.</p>
-</dd>
-</dl>
-</section>
-<section id="returns">
-<h4>Returns<a class="headerlink" href="#returns" title="Link to this heading">¶</a></h4>
-<dl class="simple">
-<dt>pd.DataFrame</dt><dd><p>DataFrame containing absolute deviations between the new user’s
-preferences and existing users’ preferences.</p>
-</dd>
-</dl>
-</section>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="webapp_food.user_fooder.User.add_preferences">
-<span class="sig-name descname"><span class="pre">add_preferences</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">recipe_suggested</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rating</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/webapp_food/user_fooder.html#User.add_preferences"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#webapp_food.user_fooder.User.add_preferences" title="Link to this definition">¶</a></dt>
-<dd><p>Adds a new preference for a specific recipe.</p>
-<section id="id1">
-<h4>Parameters<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h4>
-<dl class="simple">
-<dt>recipe_suggested<span class="classifier">int</span></dt><dd><p>The ID of the recipe to be added to preferences.</p>
-</dd>
-<dt>rating<span class="classifier">int</span></dt><dd><p>The rating assigned to the recipe.</p>
-</dd>
-</dl>
-</section>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="webapp_food.user_fooder.User.del_preferences">
-<span class="sig-name descname"><span class="pre">del_preferences</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">recipe_deleted</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/webapp_food/user_fooder.html#User.del_preferences"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#webapp_food.user_fooder.User.del_preferences" title="Link to this definition">¶</a></dt>
-<dd><p>Removes a preference associated with a specific recipe.</p>
-<section id="id2">
-<h4>Parameters<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h4>
-<dl class="simple">
-<dt>recipe_deleted<span class="classifier">int</span></dt><dd><p>The ID of the recipe to be removed from preferences.</p>
-</dd>
-</dl>
-</section>
-<section id="id3">
-<h4>Raises<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h4>
-<dl class="simple">
-<dt>KeyError</dt><dd><p>If the recipe ID does not exist in the user’s preferences.</p>
-</dd>
-</dl>
-</section>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="webapp_food.user_fooder.User.get_interactions_dessert">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_interactions_dessert</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">DataFrame</span></em><a class="headerlink" href="#webapp_food.user_fooder.User.get_interactions_dessert" title="Link to this definition">¶</a></dt>
-<dd><p>Returns the dataset of user-recipe interactions for desserts.</p>
-<section id="id4">
-<h4>Returns<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h4>
-<dl class="simple">
-<dt>pd.DataFrame</dt><dd><p>The dataset of interactions for desserts.</p>
-</dd>
-</dl>
-</section>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="webapp_food.user_fooder.User.get_interactions_main">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_interactions_main</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">DataFrame</span></em><a class="headerlink" href="#webapp_food.user_fooder.User.get_interactions_main" title="Link to this definition">¶</a></dt>
-<dd><p>Returns the dataset of user-recipe interactions for main dishes.</p>
-<section id="id5">
-<h4>Returns<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h4>
-<dl class="simple">
-<dt>pd.DataFrame</dt><dd><p>The dataset of interactions for main dishes.</p>
-</dd>
-</dl>
-</section>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="webapp_food.user_fooder.User.get_preferences">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_preferences</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span></em><a class="headerlink" href="#webapp_food.user_fooder.User.get_preferences" title="Link to this definition">¶</a></dt>
-<dd><p>Returns the user’s preferences.</p>
-<section id="id6">
-<h4>Returns<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h4>
-<dl class="simple">
-<dt>dict</dt><dd><p>A dictionary where keys are recipe IDs and values are the ratings.</p>
-</dd>
-</dl>
-</section>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="webapp_food.user_fooder.User.get_type_of_dish">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_type_of_dish</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#webapp_food.user_fooder.User.get_type_of_dish" title="Link to this definition">¶</a></dt>
-<dd><p>Returns the type of dish desired by the user.</p>
-<section id="id7">
-<h4>Returns<a class="headerlink" href="#id7" title="Link to this heading">¶</a></h4>
-<dl class="simple">
-<dt>str</dt><dd><p>The type of dish (“main” or “dessert”).</p>
-</dd>
-</dl>
-</section>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="webapp_food.user_fooder.User.load_datasets">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load_datasets</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/webapp_food/user_fooder.html#User.load_datasets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#webapp_food.user_fooder.User.load_datasets" title="Link to this definition">¶</a></dt>
-<dd><p>Loads user-recipe interaction datasets for main dishes and desserts.</p>
-<section id="id8">
-<h4>Notes<a class="headerlink" href="#id8" title="Link to this heading">¶</a></h4>
-<ul class="simple">
-<li><p>CSV files are loaded only once at the class level.</p></li>
-<li><p>Files must be located at the specified paths
-(“data/data/PP_user_main_dishes.csv” and “data/PP_user_desserts”).</p></li>
-</ul>
-</section>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="webapp_food.user_fooder.User.near_neighboor">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">near_neighboor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">recipes_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interactions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interactions_pivot_input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="_modules/webapp_food/user_fooder.html#User.near_neighboor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#webapp_food.user_fooder.User.near_neighboor" title="Link to this definition">¶</a></dt>
-<dd><p>Selects nearby users based on distances and their interactions.</p>
-<section id="id9">
-<h4>Parameters<a class="headerlink" href="#id9" title="Link to this heading">¶</a></h4>
-<dl class="simple">
-<dt>recipes_id<span class="classifier">list</span></dt><dd><p>List of recipe IDs already reviewed by the new user.</p>
-</dd>
-<dt>interactions<span class="classifier">pd.DataFrame</span></dt><dd><p>DataFrame containing user-recipe interactions.</p>
-</dd>
-<dt>interactions_pivot_input<span class="classifier">pd.DataFrame</span></dt><dd><p>Pivot table containing user distances and recipe interactions.</p>
-</dd>
-</dl>
-</section>
-<section id="id10">
-<h4>Returns<a class="headerlink" href="#id10" title="Link to this heading">¶</a></h4>
-<dl class="simple">
-<dt>pd.DataFrame</dt><dd><p>Filtered interactions from nearby users for recipes not reviewed
-by the new user.</p>
-</dd>
-</dl>
-</section>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="webapp_food.user_fooder.User.pivot_table_of_df">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pivot_table_of_df</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">interactions_reduce</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="_modules/webapp_food/user_fooder.html#User.pivot_table_of_df"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#webapp_food.user_fooder.User.pivot_table_of_df" title="Link to this definition">¶</a></dt>
-<dd><p>Transforms a user-recipe interaction DataFrame into a pivot table.</p>
-<section id="id11">
-<h4>Parameters<a class="headerlink" href="#id11" title="Link to this heading">¶</a></h4>
-<dl class="simple">
-<dt>interactions_reduce<span class="classifier">pd.DataFrame</span></dt><dd><p>Filtered interaction DataFrame containing the columns “user_id”,
-“recipe_id”, and “rating”.</p>
-</dd>
-</dl>
-</section>
-<section id="id12">
-<h4>Returns<a class="headerlink" href="#id12" title="Link to this heading">¶</a></h4>
-<dl class="simple">
-<dt>pd.DataFrame</dt><dd><p>A pivot table with user IDs as rows, recipe IDs as columns, and
-ratings as values. Missing values are replaced with 0.</p>
-</dd>
-</dl>
-</section>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="webapp_food.user_fooder.User.recipe_suggestion">
-<span class="sig-name descname"><span class="pre">recipe_suggestion</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="reference internal" href="_modules/webapp_food/user_fooder.html#User.recipe_suggestion"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#webapp_food.user_fooder.User.recipe_suggestion" title="Link to this definition">¶</a></dt>
-<dd><p>Suggests a recipe based on the new user’s preferences and
-existing interactions.</p>
-<section id="id13">
-<h4>Returns<a class="headerlink" href="#id13" title="Link to this heading">¶</a></h4>
-<dl class="simple">
-<dt>int</dt><dd><p>Suggested recipe ID.</p>
-</dd>
-</dl>
-</section>
-<section id="id14">
-<h4>Notes<a class="headerlink" href="#id14" title="Link to this heading">¶</a></h4>
-<ul class="simple">
-<li><p>If the new user has no preferences, a random recipe is suggested.</p></li>
-<li><p>The suggestion is based on the similarity of nearby users.</p></li>
-</ul>
-</section>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="webapp_food.user_fooder.User.validity_type_of_dish">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">validity_type_of_dish</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type_of_dish</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/webapp_food/user_fooder.html#User.validity_type_of_dish"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#webapp_food.user_fooder.User.validity_type_of_dish" title="Link to this definition">¶</a></dt>
-<dd><p>Validates the dish type.</p>
-<section id="id15">
-<h4>Parameters<a class="headerlink" href="#id15" title="Link to this heading">¶</a></h4>
-<dl class="simple">
-<dt>type_of_dish<span class="classifier">str</span></dt><dd><p>The provided dish type (must be “main” or “dessert”).</p>
-</dd>
-</dl>
-</section>
-<section id="id16">
-<h4>Raises<a class="headerlink" href="#id16" title="Link to this heading">¶</a></h4>
-<dl class="simple">
-<dt>ValueError</dt><dd><p>If the dish type is neither “main” nor “dessert”.</p>
-</dd>
-</dl>
-</section>
-</dd></dl>
-
-</section>
-</dd></dl>
-
+<section id="webapp-food-user-fooder-module">
+<h2>webapp_food.user_fooder module<a class="headerlink" href="#webapp-food-user-fooder-module" title="Link to this heading">¶</a></h2>
 </section>
 <section id="module-webapp_food.utils">
 <span id="webapp-food-utils-module"></span><h2>webapp_food.utils module<a class="headerlink" href="#module-webapp_food.utils" title="Link to this heading">¶</a></h2>
 <p>This module contains utility functions for the webapp_food module.
-The functions are used to search for recipe images on Google.</p>
+The functions are used to search for recipe images on Google,
+Transform graphs from Networkx to pyvis, interact between
+the app and the user class, define errors.</p>
 <dl class="py exception">
 <dt class="sig sig-object py" id="webapp_food.utils.ImageError">
 <em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">webapp_food.utils.</span></span><span class="sig-name descname"><span class="pre">ImageError</span></span><a class="reference internal" href="_modules/webapp_food/utils.html#ImageError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#webapp_food.utils.ImageError" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
 <p>Raised when an image cannot be found for a recipe</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="webapp_food.utils.NoNeighborError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">webapp_food.utils.</span></span><span class="sig-name descname"><span class="pre">NoNeighborError</span></span><a class="reference internal" href="_modules/webapp_food/utils.html#NoNeighborError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#webapp_food.utils.NoNeighborError" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Raised when the user has no near neighbor</p>
 </dd></dl>
 
 <dl class="py function">
@@ -625,6 +318,14 @@ The functions are used to search for recipe images on Google.</p>
 <dd><p>Update user preferences based on like or dislike actions.</p>
 </dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py" id="webapp_food.utils.visualize_graph">
+<span class="sig-prename descclassname"><span class="pre">webapp_food.utils.</span></span><span class="sig-name descname"><span class="pre">visualize_graph</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">graph</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/webapp_food/utils.html#visualize_graph"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#webapp_food.utils.visualize_graph" title="Link to this definition">¶</a></dt>
+<dd><p>Saves a NetworkX graph using PyVis.</p>
+<p>Parameters:
+- graph: The NetworkX graph to save.</p>
+</dd></dl>
+
 </section>
 <section id="module-webapp_food">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-webapp_food" title="Link to this heading">¶</a></h2>
@@ -636,12 +337,12 @@ The functions are used to search for recipe images on Google.</p>
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="algo_recipe_suggestion.html">
+          <a class="next-page" href="preprocessing.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">Explanation of Recipe Suggestion</div>
+                <div class="title">Explanation of Preprocessing</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
@@ -689,31 +390,15 @@ The functions are used to search for recipe images on Google.</p>
 <li><a class="reference internal" href="#">webapp_food package</a><ul>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
 <li><a class="reference internal" href="#webapp-food-fooder-module">webapp_food.fooder module</a></li>
-<li><a class="reference internal" href="#module-webapp_food.user_fooder">webapp_food.user_fooder module</a><ul>
-<li><a class="reference internal" href="#webapp_food.user_fooder.User"><code class="docutils literal notranslate"><span class="pre">User</span></code></a><ul>
-<li><a class="reference internal" href="#webapp_food.user_fooder.User.__post_init__"><code class="docutils literal notranslate"><span class="pre">User.__post_init__()</span></code></a></li>
-<li><a class="reference internal" href="#webapp_food.user_fooder.User.abs_deviation"><code class="docutils literal notranslate"><span class="pre">User.abs_deviation()</span></code></a></li>
-<li><a class="reference internal" href="#webapp_food.user_fooder.User.add_preferences"><code class="docutils literal notranslate"><span class="pre">User.add_preferences()</span></code></a></li>
-<li><a class="reference internal" href="#webapp_food.user_fooder.User.del_preferences"><code class="docutils literal notranslate"><span class="pre">User.del_preferences()</span></code></a></li>
-<li><a class="reference internal" href="#webapp_food.user_fooder.User.get_interactions_dessert"><code class="docutils literal notranslate"><span class="pre">User.get_interactions_dessert</span></code></a></li>
-<li><a class="reference internal" href="#webapp_food.user_fooder.User.get_interactions_main"><code class="docutils literal notranslate"><span class="pre">User.get_interactions_main</span></code></a></li>
-<li><a class="reference internal" href="#webapp_food.user_fooder.User.get_preferences"><code class="docutils literal notranslate"><span class="pre">User.get_preferences</span></code></a></li>
-<li><a class="reference internal" href="#webapp_food.user_fooder.User.get_type_of_dish"><code class="docutils literal notranslate"><span class="pre">User.get_type_of_dish</span></code></a></li>
-<li><a class="reference internal" href="#webapp_food.user_fooder.User.load_datasets"><code class="docutils literal notranslate"><span class="pre">User.load_datasets()</span></code></a></li>
-<li><a class="reference internal" href="#webapp_food.user_fooder.User.near_neighboor"><code class="docutils literal notranslate"><span class="pre">User.near_neighboor()</span></code></a></li>
-<li><a class="reference internal" href="#webapp_food.user_fooder.User.pivot_table_of_df"><code class="docutils literal notranslate"><span class="pre">User.pivot_table_of_df()</span></code></a></li>
-<li><a class="reference internal" href="#webapp_food.user_fooder.User.recipe_suggestion"><code class="docutils literal notranslate"><span class="pre">User.recipe_suggestion()</span></code></a></li>
-<li><a class="reference internal" href="#webapp_food.user_fooder.User.validity_type_of_dish"><code class="docutils literal notranslate"><span class="pre">User.validity_type_of_dish()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li><a class="reference internal" href="#webapp-food-user-fooder-module">webapp_food.user_fooder module</a></li>
 <li><a class="reference internal" href="#module-webapp_food.utils">webapp_food.utils module</a><ul>
 <li><a class="reference internal" href="#webapp_food.utils.ImageError"><code class="docutils literal notranslate"><span class="pre">ImageError</span></code></a></li>
+<li><a class="reference internal" href="#webapp_food.utils.NoNeighborError"><code class="docutils literal notranslate"><span class="pre">NoNeighborError</span></code></a></li>
 <li><a class="reference internal" href="#webapp_food.utils.fetch_recipe_details"><code class="docutils literal notranslate"><span class="pre">fetch_recipe_details()</span></code></a></li>
 <li><a class="reference internal" href="#webapp_food.utils.print_image"><code class="docutils literal notranslate"><span class="pre">print_image()</span></code></a></li>
 <li><a class="reference internal" href="#webapp_food.utils.search_images"><code class="docutils literal notranslate"><span class="pre">search_images()</span></code></a></li>
 <li><a class="reference internal" href="#webapp_food.utils.update_preferences"><code class="docutils literal notranslate"><span class="pre">update_preferences()</span></code></a></li>
+<li><a class="reference internal" href="#webapp_food.utils.visualize_graph"><code class="docutils literal notranslate"><span class="pre">visualize_graph()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#module-webapp_food">Module contents</a></li>
