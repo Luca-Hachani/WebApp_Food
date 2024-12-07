@@ -129,7 +129,6 @@ def test_get_graph_no_neighbors(setup_user):
 
     user.add_preferences(101, LIKE)
     user.recipe_suggestion()
-    print(user._near_neighbor)
 
     with pytest.raises(uf.NoNeighborError, match="No neighbor found"):
         user.get_graph(LIKE)
@@ -146,7 +145,6 @@ def test_get_graph(setup_user):
     assert len(graph.edges) == 1
     assert ("you", "user 4", "102") in graph.edges or (
         "user 4", "you", "102") in graph.edges
-
 
     graph = user.get_graph(DISLIKE)
     assert len(graph.nodes) == 1
