@@ -3,4 +3,3 @@ webapp_food/__pycache__/
 coverage.xml
 .coverage
 fooder.log
-webapp_food/graphs/neighbour.html
