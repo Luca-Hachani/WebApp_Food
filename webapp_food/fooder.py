@@ -272,7 +272,8 @@ else:
             col11.button('Graph of Likes neighbors', key='like_graph')
             col12.button('Graph of Dislikes neighbors', key='dislike_graph')
         with col2:
-            neighbors_data = st.session_state.user.get_neighbor_data()
+            neighbors_data = st.session_state.user.get_neighbor_data(
+                st.session_state.graph_type)
             neighbors_data.insert(0, 'User', neighbors_data.index)
             fig = go.Figure(data=[go.Table(
                 columnwidth=[1] * len(neighbors_data.columns),

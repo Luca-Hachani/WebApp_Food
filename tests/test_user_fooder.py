@@ -2,7 +2,8 @@ import pytest
 import pandas as pd
 import numpy as np
 from webapp_food import user_fooder as uf
-from webapp_food.settings import LIKE, DISLIKE, USER_COLUMNS
+from webapp_food.settings import LIKE, DISLIKE, USER_COLUMNS, \
+    NEIGHBOR_DATA
 
 # Data configuration for tests
 
@@ -128,6 +129,7 @@ def test_get_graph_no_neighbors(setup_user):
 
     user.add_preferences(101, LIKE)
     user.recipe_suggestion()
+    print(user._near_neighbor)
 
     with pytest.raises(uf.NoNeighborError, match="No neighbor found"):
         user.get_graph(LIKE)
@@ -139,7 +141,7 @@ def test_get_graph(setup_user):
     user.recipe_suggestion()
 
     graph = user.get_graph(LIKE)
-    print(graph.edges)
+
     assert len(graph.nodes) == 2
     assert len(graph.edges) == 1
     assert ("you", "user 4", "102") in graph.edges or (
@@ -153,14 +155,14 @@ def test_get_graph(setup_user):
 # Test `get_neighbor_data`
 
 
-def test_common_likes(setup_user):
+def test_common_likes(setup_user,):
     user = setup_user
 
     user.add_preferences(102, LIKE)
     user.recipe_suggestion()
 
-    df = user.get_neighbor_data()
+    df = user.get_neighbor_data(LIKE)
 
-    assert df.loc[4, "Common likes"] == 1
-    assert df.loc[4, "Common dislikes"] == 0
-    assert df.loc[4, "Recipes to recommend"] == 1
+    assert df.loc[4, NEIGHBOR_DATA[0]] == 1
+    assert df.loc[4, NEIGHBOR_DATA[1]] == 0
+    assert df.loc[4, NEIGHBOR_DATA[2]] == 1
