@@ -28,7 +28,9 @@ This section explains the inner workings of the key algorithms in the project.
    :maxdepth: 2
    :caption: Algorithm Details:
 
+   preprocessing
    algo_recipe_suggestion
+   graph
 
 Indices and tables:
 -------------------

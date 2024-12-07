@@ -210,6 +210,7 @@
 <p class="caption" role="heading"><span class="caption-text">Algorithm Details:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../algo_recipe_suggestion.html">Explanation of Recipe Suggestion</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../graph.html">Explanation of Graph Page</a></li>
 </ul>
 
 </div>
@@ -246,12 +247,16 @@
         <article role="main" id="furo-main-content">
           <h1>Source code for webapp_food.utils</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot; This module contains utility functions for the webapp_food module.</span>
-<span class="sd">    The functions are used to search for recipe images on Google.&quot;&quot;&quot;</span>
+<span class="sd">    The functions are used to search for recipe images on Google,</span>
+<span class="sd">    Transform graphs from Networkx to pyvis, interact between</span>
+<span class="sd">    the app and the user class, define errors.&quot;&quot;&quot;</span>
 <span class="kn">from</span> <span class="nn">ast</span> <span class="kn">import</span> <span class="n">literal_eval</span>
 <span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">import</span> <span class="nn">requests</span>
 <span class="kn">from</span> <span class="nn">bs4</span> <span class="kn">import</span> <span class="n">BeautifulSoup</span>
 <span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">pyvis.network</span> <span class="kn">import</span> <span class="n">Network</span>
+<span class="kn">from</span> <span class="nn">webapp_food.settings</span> <span class="kn">import</span> <span class="n">RECIPE_COLUMNS</span>
 
 <span class="c1"># use the requests library to search for images on Google</span>
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
@@ -261,6 +266,13 @@
 <a class="viewcode-back" href="../../webapp_food.html#webapp_food.utils.ImageError">[docs]</a>
 <span class="k">class</span> <span class="nc">ImageError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Raised when an image cannot be found for a recipe&quot;&quot;&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="NoNeighborError">
+<a class="viewcode-back" href="../../webapp_food.html#webapp_food.utils.NoNeighborError">[docs]</a>
+<span class="k">class</span> <span class="nc">NoNeighborError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Raised when the user has no near neighbor&quot;&quot;&quot;</span></div>
 
 
 
@@ -323,9 +335,32 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Fetch recipe details (steps and ingredients).&quot;&quot;&quot;</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fetching recipe details for recipe_index=</span><span class="si">{</span><span class="n">recipe_index</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">recipe</span> <span class="o">=</span> <span class="n">recipes_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">recipe_index</span><span class="p">]</span>
-    <span class="n">steps</span> <span class="o">=</span> <span class="n">literal_eval</span><span class="p">(</span><span class="n">recipe</span><span class="p">[</span><span class="s1">&#39;steps&#39;</span><span class="p">])</span>
-    <span class="n">ingredients</span> <span class="o">=</span> <span class="n">literal_eval</span><span class="p">(</span><span class="n">recipe</span><span class="p">[</span><span class="s1">&#39;ingredients&#39;</span><span class="p">])</span>
+    <span class="n">steps</span> <span class="o">=</span> <span class="n">literal_eval</span><span class="p">(</span><span class="n">recipe</span><span class="p">[</span><span class="n">RECIPE_COLUMNS</span><span class="p">[</span><span class="mi">2</span><span class="p">]])</span>
+    <span class="n">ingredients</span> <span class="o">=</span> <span class="n">literal_eval</span><span class="p">(</span><span class="n">recipe</span><span class="p">[</span><span class="n">RECIPE_COLUMNS</span><span class="p">[</span><span class="mi">4</span><span class="p">]])</span>
     <span class="k">return</span> <span class="n">steps</span><span class="p">,</span> <span class="n">ingredients</span></div>
+
+
+
+<div class="viewcode-block" id="visualize_graph">
+<a class="viewcode-back" href="../../webapp_food.html#webapp_food.utils.visualize_graph">[docs]</a>
+<span class="k">def</span> <span class="nf">visualize_graph</span><span class="p">(</span><span class="n">graph</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Saves a NetworkX graph using PyVis.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    - graph: The NetworkX graph to save.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Visualizing graph with </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">)</span><span class="si">}</span><span class="s2"> </span><span class="se">\</span>
+<span class="s2">                 nodes and </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">edges</span><span class="p">)</span><span class="si">}</span><span class="s2"> edges&quot;</span><span class="p">)</span>
+    <span class="c1"># Create a PyVis Network object</span>
+    <span class="n">net</span> <span class="o">=</span> <span class="n">Network</span><span class="p">(</span><span class="n">notebook</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="s2">&quot;100%&quot;</span><span class="p">,</span>
+                  <span class="n">height</span><span class="o">=</span><span class="s2">&quot;300px&quot;</span><span class="p">,</span> <span class="n">cdn_resources</span><span class="o">=</span><span class="s1">&#39;remote&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Convert NetworkX graph to PyVis</span>
+    <span class="n">net</span><span class="o">.</span><span class="n">from_nx</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
+
+    <span class="c1"># Save the graph as an HTML file</span>
+    <span class="n">net</span><span class="o">.</span><span class="n">save_graph</span><span class="p">(</span><span class="s2">&quot;webapp_food/graphs/neighbour.html&quot;</span><span class="p">)</span></div>
 
 </pre></div>
         </article>
