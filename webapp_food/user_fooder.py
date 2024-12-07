@@ -262,6 +262,7 @@ class User:
         interactions_prox = interactions_prox[~interactions_prox['recipe_id']
                                               .isin(recipes_id)]
         interactions_pivot_output = User.pivot_table_of_df(interactions_prox)
+        interactions_pivot_output = interactions_pivot_output.reindex(user_prox_id)
         user_prox_id = np.unique(interactions_prox["user_id"])
         interactions_selection = interactions_pivot_output.loc[user_prox_id]
         return interactions_selection
