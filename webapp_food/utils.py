@@ -1,12 +1,25 @@
-import pandas as pd
+""" This module contains utility functions for the webapp_food module.
+    The functions are used to search for recipe images on Google,
+    Transform graphs from Networkx to pyvis, interact between
+    the app and the user class, define errors."""
+from ast import literal_eval
 import re
-import logging
 import requests
-from IPython.display import Image
 from bs4 import BeautifulSoup
-
+import logging
+from pyvis.network import Network
+from webapp_food.settings import RECIPE_COLUMNS
 
 # use the requests library to search for images on Google
+logger = logging.getLogger(__name__)
+
+
+class ImageError(Exception):
+    """Raised when an image cannot be found for a recipe"""
+
+
+class NoNeighborError(Exception):
+    """Raised when the user has no near neighbor"""
 
 
 def search_images(search_term):
@@ -15,59 +28,68 @@ def search_images(search_term):
     Args:
         search_term (string): name of the image to search for
     """
+    logger.debug(f"In search_images with search_term={search_term}")
     url = 'https://www.google.com/search?tbm=isch&q=' + search_term
     response = requests.get(url, timeout=5)
     return response.text
 
 
-def return_image(search_term, n=1):
-    """return n image from Google search results
+def print_image(search_term, n=1):
+    """search an image and return a printable image
 
     Args:
         search_term (string): name of the image to search for
-        n (int): number of images to return (default: {1})
-
-    Returns:
-        list: list of image urls
     """
-    logging.info("Searching for image: %s", search_term)
-    imgs = []
+    logger.debug(f"In print_image with search_term={search_term}")
     try:
         html = search_images(search_term)
-    except requests.RequestException as e:
-        logging.error("Error while requesting Google for the image: %s", e)
-    else:
         soup = BeautifulSoup(html, 'html.parser')
         img_tags = soup.find_all('img', {'src': re.compile('gstatic.com')})
+        imgs = []
         for i, img_tag in enumerate(img_tags):
             if i >= n:
-                logging.info(
-                    "Found only %d images for search term: %s", i, search_term)
                 break
-            imgs.append(Image(img_tag['src']))
+            imgs.append(img_tag['src'])
         if not imgs:
-            logging.error("No images found for search term: %s", search_term)
-    return imgs
+            logger.info("No image found for this recipe")
+            raise ImageError("No image found for this recipe")
+        return imgs
+    except Exception as exc:
+        logger.error(f"Error fetching image for recipe {search_term}: {exc}")
+        raise ImageError("No image found for this recipe") from exc
 
 
-def load_recipe_dataset():
-    """Load the raw recipe dataset from the CSV file.
+def update_preferences(user, recipe_index, preference_value):
+    """Update user preferences based on like or dislike actions."""
+    logger.debug(f"Updating preferences for user {user} with recipe_index={
+                 recipe_index} and preference_value={preference_value}")
+    user.add_preferences(recipe_index, preference_value)
 
-    Returns:
-        pd.Dataframe: raw recipe dataset
+
+def fetch_recipe_details(recipes_df, recipe_index):
+    """Fetch recipe details (steps and ingredients)."""
+    logger.debug(f"Fetching recipe details for recipe_index={recipe_index}")
+    recipe = recipes_df.loc[recipe_index]
+    steps = literal_eval(recipe[RECIPE_COLUMNS[2]])
+    ingredients = literal_eval(recipe[RECIPE_COLUMNS[4]])
+    return steps, ingredients
+
+
+def visualize_graph(graph):
     """
-    dataset = pd.read_csv('data/RAW_recipes.csv')
-    return dataset
+    Saves a NetworkX graph using PyVis.
 
-
-def get_recipe(index):
-    """return the recipe with the given index.
-
-    Args:
-        index (int): index of the recipe to return
-
-    Returns:
-        pd.Dataframe: line of the recipe dataset with the given index
+    Parameters:
+    - graph: The NetworkX graph to save.
     """
-    dataset = load_recipe_dataset()
-    return dataset[dataset['id'] == index]
+    logger.debug(f"Visualizing graph with {len(graph.nodes)} \
+                 nodes and {len(graph.edges)} edges")
+    # Create a PyVis Network object
+    net = Network(notebook=True, width="100%",
+                  height="300px", cdn_resources='remote')
+
+    # Convert NetworkX graph to PyVis
+    net.from_nx(graph)
+
+    # Save the graph as an HTML file
+    net.save_graph("webapp_food/graphs/neighbour.html")
