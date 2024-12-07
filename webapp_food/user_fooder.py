@@ -201,7 +201,8 @@ class User:
         return interactions_pivot
 
     @staticmethod
-    def abs_deviation(recipes_rating: np.ndarray, interactions_pivot: pd.DataFrame) -> pd.DataFrame:
+    def abs_deviation(recipes_rating: np.ndarray,
+                      interactions_pivot: pd.DataFrame) -> pd.DataFrame:
         """
         Calcule la déviation absolue entre les préférences du
         nouvel utilisateur pour une recette et les interactions existantes.
@@ -511,7 +512,7 @@ class User:
                 interactions_reduced = interactions.loc[
                     [list_user[0], list_user[user]]]
                 interactions_filtered = interactions_reduced.loc[
-                    :, (interactions_reduced == 1).any(axis=0)]
+                    :, (interactions_reduced == type).any(axis=0)]
                 interactions_filtered = interactions_filtered.loc[
                     :, (interactions_reduced != 0).any(axis=0)]
                 dist = self.abs_deviation(
