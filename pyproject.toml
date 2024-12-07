@@ -2,7 +2,7 @@
 name = "webapp-food"
 version = "0.1.0"
 description = ""
-authors = ["Your Name <you@example.com>"]
+authors = ["Louis Borreill", "Luca Hachani", "Merlin Poitou"]
 readme = "README.md"
 
 [tool.poetry.dependencies]

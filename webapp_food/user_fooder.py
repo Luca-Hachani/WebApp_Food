@@ -3,12 +3,14 @@ Module containing the User class for recipe recommendations.
 """
 # Importation des librairies
 from dataclasses import dataclass, field
-from itertools import combinations
-from webapp_food.utils import NoNeighboorError
+from webapp_food.utils import NoNeighborError
 import numpy as np
 import pandas as pd
 import networkx as nx
 import logging
+from webapp_food.settings import LIKE, DISLIKE, \
+    USER_COLUMNS, USER_MAIN_DF, USER_DESSERT_DF, \
+    TYPE_OF_DISH, NEIGHBOR_DATA
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +58,7 @@ class User:
         Calculates the absolute deviation between recipe ratings and
         existing interactions.
 
-    near_neighboor(recipes_id: list, interactions: pd.DataFrame,
+    near_neighbor(self, recipes_id: list, interactions: pd.DataFrame,
     interactions_pivot_input: pd.DataFrame) -> pd.DataFrame
         Selects close neighbor users based on their distances and interactions.
 
@@ -113,7 +115,7 @@ class User:
         init=False, repr=False)  # Chargé au runtime
     _interactions_dessert: pd.DataFrame = field(
         init=False, repr=False)  # Chargé au runtime
-    _near_neighboor: pd.DataFrame = field(
+    _near_neighbor: pd.DataFrame = field(
         init=False, repr=False)  # Chargé au runtime
 
     # post initialisation
@@ -138,7 +140,7 @@ class User:
         self.load_datasets()
 
         # Initialise near neighbors at None
-        self._near_neighboor = pd.DataFrame()
+        self._near_neighbor = pd.DataFrame()
 
     # static methods
     @staticmethod
@@ -157,7 +159,7 @@ class User:
             If the dish type is neither "main" nor "dessert".
         """
         logger.debug(f"Checking validity of type_of_dish={type_of_dish}")
-        if type_of_dish not in ["main", "dessert"]:
+        if type_of_dish not in TYPE_OF_DISH:
             logger.info(f"Invalid type of dish: {type_of_dish}")
             raise ValueError(f'The type of dish must be "main" or \
                              "dessert" only, and not "{
@@ -182,7 +184,8 @@ class User:
         """
         logger.debug("Pivoting DataFrame of interactions")
         interactions_pivot = interactions_reduce.pivot(
-            index='user_id', columns='recipe_id', values='rate')
+            index=USER_COLUMNS[0], columns=USER_COLUMNS[1],
+            values=USER_COLUMNS[2])
         interactions_pivot = interactions_pivot.fillna(0)
         interactions_pivot.columns.name = None
         interactions_pivot.index.name = None
@@ -212,14 +215,13 @@ class User:
         logger.debug(
             "Calculating absolute deviation between user \
             preferences and existing interactions")
-        norm_order = 1
         interactions_abs = np.abs(
-            interactions_pivot-recipes_rating)**norm_order
+            interactions_pivot-recipes_rating)
         return interactions_abs
 
     @staticmethod
-    def near_neighboor(recipes_id: list, interactions: pd.DataFrame,
-                       interactions_pivot_input: pd.DataFrame) -> pd.DataFrame:
+    def near_neighbor(recipes_id: list, interactions: pd.DataFrame,
+                      interactions_pivot_input: pd.DataFrame) -> pd.DataFrame:
         """
         Selects nearby users based on distances and their interactions.
 
@@ -241,13 +243,15 @@ class User:
         logger.debug(
             "Selecting near neighbors based on distance and interactions")
         user_prox_id = interactions_pivot_input.sort_values(
-            "dist").head(3).index
-        interactions_prox = interactions[interactions['user_id'].isin(
+            "dist").head(5).index
+        interactions_prox = interactions[interactions[USER_COLUMNS[0]].isin(
             user_prox_id)]
-        interactions_prox = interactions_prox[~interactions_prox['recipe_id']
-                                              .isin(recipes_id)]
+        interactions_prox = interactions_prox[
+            ~interactions_prox[USER_COLUMNS[1]].isin(recipes_id)]
         interactions_pivot_output = User.pivot_table_of_df(interactions_prox)
-        user_prox_id = np.unique(interactions_prox["user_id"])
+        interactions_pivot_output = interactions_pivot_output.reindex(
+            user_prox_id)
+        user_prox_id = np.unique(interactions_prox[USER_COLUMNS[0]])
         interactions_selection = interactions_pivot_output.loc[user_prox_id]
         return interactions_selection
 
@@ -268,9 +272,9 @@ class User:
         if not hasattr(cls, "_interactions_main") or \
                 not hasattr(cls, "_interactions_dessert"):
             cls._interactions_main = pd.read_csv(
-                "data/PP_user_main_dishes.csv", sep=',')
+                USER_MAIN_DF, sep=',')
             cls._interactions_dessert = pd.read_csv(
-                "data/PP_user_desserts.csv", sep=',')
+                USER_DESSERT_DF, sep=',')
 
     # property methods
     @property
@@ -325,6 +329,24 @@ class User:
         logger.debug("Getting interactions dataset for desserts")
         return self._interactions_dessert
 
+    @property
+    def get_interactions(self) -> pd.DataFrame:
+        """
+        Retourne the dataset for the current used recipes.
+
+        Returns:
+        -------
+        pd.DataFrame:
+            Dataset of interactions.
+        """
+        logger.debug("Getting interactions dataset")
+        if self.get_type_of_dish == TYPE_OF_DISH[0]:
+            interactions = self._interactions_main
+        elif self.get_type_of_dish == TYPE_OF_DISH[1]:
+            interactions = self._interactions_dessert
+
+        return interactions
+
     # methods
     def recipe_suggestion(self) -> int:
         """
@@ -343,31 +365,29 @@ class User:
 
         """
         logger.debug("Proposing a recipe suggestion for user")
-        interactions = None
-        if self._type_of_dish == "main":
-            interactions = self.get_interactions_main
-        elif self._type_of_dish == "dessert":
-            interactions = self.get_interactions_dessert
+        interactions = self.get_interactions
         if len(self._preferences) == 0:
-            logger.info("new user's historic is empty")
-            recipe_suggested = interactions["recipe_id"].sample(n=1).iloc[0]
+            logger.info('user new historic is empty')
+            recipe_suggested = interactions[
+                USER_COLUMNS[1]].sample(n=1).iloc[0]
         else:
             recipes_id = list(self._preferences.keys())
             recipes_rating = np.array(
                 list(self._preferences.values())).reshape(1, -1)
-            interactions_reduce = interactions[interactions['recipe_id'].isin(
-                recipes_id)]
+            interactions_reduce = interactions[
+                interactions[USER_COLUMNS[1]].isin(
+                    recipes_id)]
             interactions_pivot = self.pivot_table_of_df(interactions_reduce)
             interactions_abs = self.abs_deviation(
                 recipes_rating, interactions_pivot)
             interactions_pivot["dist"] = interactions_abs.sum(axis=1)
-            interactions_selection = self.near_neighboor(
+            interactions_selection = self.near_neighbor(
                 recipes_id, interactions, interactions_pivot)
-            self._near_neighboor = interactions_selection.index
+            self._near_neighbor = interactions_selection.index
             if interactions_selection.empty:
                 # drop recipes already in preferences
                 interactions_selection = interactions[
-                    ~interactions['recipe_id'].isin(recipes_id)]
+                    ~interactions[USER_COLUMNS[1]].isin(recipes_id)]
                 if interactions_selection.empty:
                     logger.info('No more recipes to suggest from the dataset')
                     raise ValueError('No more recipes to suggest.')
@@ -376,7 +396,8 @@ class User:
                         'No more recipes to suggest from the user preferences,\
                         suggesting a random recipe')
                     recipe_suggested = \
-                        interactions_selection["recipe_id"].sample(n=1).iloc[0]
+                        interactions_selection[
+                            USER_COLUMNS[1]].sample(n=1).iloc[0]
             else:
                 recipe_suggested = int(
                     interactions_selection.sum(axis=0).idxmax())
@@ -442,43 +463,66 @@ class User:
 
         Raises
         ------
-        NoNeighboorError
+        NoNeighborError
             Si aucun voisin n'est disponible pour créer le graphe.
         """
         logger.debug("Getting user network graph")
 
-        if self._near_neighboor.empty:
-            logger.warning("No neighboor found")
-            raise NoNeighboorError("No neighboor found")
+        if self._near_neighbor.empty:
+            logger.warning("No neighbor found")
+            raise NoNeighborError("No neighbor found")
 
-        user = "you"
         recipe_ids = [recipe_id for recipe_id,
                       rate in self._preferences.items() if rate == type]
-        near_neighboor = self._near_neighboor
+        near_neighbor = self._near_neighbor
+        interactions = self.get_interactions
+        interactions = self.pivot_table_of_df(
+            interactions.loc[
+                interactions[USER_COLUMNS[0]].isin(near_neighbor)])
+        missing_recipes = set(recipe_ids) - set(interactions.columns)
+        for recipe in missing_recipes:
+            interactions[recipe] = 0
 
         graph = nx.MultiGraph()
-        graph.add_node(user)
-        graph.add_nodes_from(
-            ["user: " + str(neighboor) for neighboor in near_neighboor])
-        if self.get_type_of_dish == "main":
-            interactions = self.get_interactions_main
-        elif self.get_type_of_dish == "dessert":
-            interactions = self.get_interactions_dessert
-        interactions = self.pivot_table_of_df(
-            interactions.loc[interactions['user_id'].isin(near_neighboor)])
 
-        for recipe in recipe_ids:
-            neighboor_to_edges = interactions[
-                interactions[recipe] == type].index
-            neighboor_to_edges = ["user: " + str(neighboor)
-                                  for neighboor in neighboor_to_edges]
-            neighboor_to_edges.append(user)
-            edges = list(combinations(neighboor_to_edges, 2))
-            graph.add_edges_from(edges)
+        user = pd.Series(0, index=interactions.columns)
+        user[recipe_ids] = type
+        interactions = pd.concat(
+            [pd.DataFrame([user], index=[0]), interactions])
+
+        list_user = (interactions.index).to_list()
+        graph.add_nodes_from(
+            ["user " + str(neighbor) for neighbor in list_user])
+
+        while list_user:
+            for user in range(1, len(list_user)):
+                interactions_reduced = interactions.loc[
+                    [list_user[0], list_user[user]]]
+                interactions_filtered = interactions_reduced.loc[
+                    :, (interactions_reduced == type).any(axis=0)]
+                interactions_filtered = interactions_filtered.loc[
+                    :, (interactions_reduced != 0).any(axis=0)]
+                dist = self.abs_deviation(
+                    interactions_filtered.loc[list_user[0]],
+                    interactions_filtered.loc[list_user[user]])
+                recipes_with_edge = dist[dist == 0].index.to_list()
+                for recipe in recipes_with_edge:
+                    graph.add_edge(f"user {list_user[0]}",
+                                   f"user {list_user[user]}", key=f"{recipe}")
+
+            list_user = list_user[1:]
+
+        graph = nx.relabel_nodes(graph, {"user 0": "you"}, copy=False)
+
+        connected_nodes = set(graph.neighbors("you"))
+        connected_nodes.add("you")
+        unconnected_nodes = [
+            node for node in graph.nodes if node not in connected_nodes]
+        graph.remove_nodes_from(unconnected_nodes)
 
         return graph
 
-    def get_neighboor_data(self):
+    def get_neighbor_data(self, type):
         """
         Analyse les interactions entre l'utilisateur principal et ses voisins
         proches pour identifier les recettes aimées en commun, non aimées en
@@ -492,31 +536,36 @@ class User:
             - "common_dislikes" : Nombre de recettes non aimées en commun.
             - "recipes to recommend" : Nombre de recettes à recommander.
         """
-        logger.debug("Getting neighboors data")
+        logger.debug("Getting neighbors data")
 
         liked = [recipe_id for recipe_id,
-                 rate in self._preferences.items() if rate == 1]
+                 rate in self._preferences.items() if rate == LIKE]
         disliked = [recipe_id for recipe_id,
-                    rate in self._preferences.items() if rate == -1]
-        near_neighboor = self._near_neighboor
+                    rate in self._preferences.items() if rate == DISLIKE]
+        near_neighbor = self._near_neighbor
 
-        if self.get_type_of_dish == "main":
-            interactions = self.get_interactions_main
-        elif self.get_type_of_dish == "dessert":
-            interactions = self.get_interactions_dessert
+        interactions = self.get_interactions
         interactions = self.pivot_table_of_df(
-            interactions.loc[interactions['user_id'].isin(near_neighboor)])
+            interactions.loc[
+                interactions[USER_COLUMNS[0]].isin(near_neighbor)])
+        missing_recipes = set(liked+disliked) - set(interactions.columns)
+        for recipe in missing_recipes:
+            interactions[recipe] = 0
 
-        common_likes = (interactions[liked] == 1).sum(axis=1)
-        common_dislikes = (interactions[disliked] == -1).sum(axis=1)
+        common_likes = (interactions[liked] == LIKE).sum(axis=1)
+        common_dislikes = (interactions[disliked] == DISLIKE).sum(axis=1)
 
         remaining_recipes = interactions.drop(columns=liked)
-        to_recommend = (remaining_recipes == 1).sum(axis=1)
+        to_recommend = (remaining_recipes == LIKE).sum(axis=1)
 
         df = pd.DataFrame({
-            "common likes": common_likes,
-            "common dislikes": common_dislikes,
-            "recipes to recommend": to_recommend
+            NEIGHBOR_DATA[0]: common_likes,
+            NEIGHBOR_DATA[1]: common_dislikes,
+            NEIGHBOR_DATA[2]: to_recommend
         })
+
+        df = df.sort_values(
+            by=(NEIGHBOR_DATA[0] if type == 1 else NEIGHBOR_DATA[1]),
+            ascending=False)
 
         return df

@@ -2,57 +2,31 @@ import pytest
 import pandas as pd
 import numpy as np
 from webapp_food import user_fooder as uf
+from webapp_food.settings import LIKE, DISLIKE, USER_COLUMNS, \
+    NEIGHBOR_DATA
 
-# #test
-
-# # Créer un utilisateur
-# type_of_dish = "main"
-# dico = {116345 : 1, 32907 : -1}
-# # dico : {}
-# user1 = uf.User(_type_of_dish=type_of_dish, _preferences=dico)
-# print("recipe historic =", list(dico.keys()))
-# print("rating historic =", list(dico.values()))
-# print("type of dish =", user1.get_type_of_dish)
-# print("former dict of user's preferences =", user1.get_preferences)
-
-# # Lui Suggérer une recette
-# recipe_suggested = user1.recipe_suggestion()
-# print("recipes suggested =", recipe_suggested)
-
-# # Ajouter ses préférences
-# rating = 1
-# user1.add_preferences(recipe_suggested=recipe_suggested, rating=rating)
-# print("new dict of user's preferences =", user1.get_preferences)
-
-# # Supprimer ses préférences
-# user1.del_preferences(recipe_deleted=116345)
-# print("edited dict of user's preferences =", user1.get_preferences)
-
-# # Affiche le dataset
-# # User.dataset_interaction(type_of_dish)
-
-# Configuration des données pour les tests
+# Data configuration for tests
 
 
 @pytest.fixture
 def setup_user():
-    # Simulation des datasets
+    # Dataset simulation
     main_data = pd.DataFrame({
-        'user_id': [1, 2, 3, 4, 4],
-        'recipe_id': [101, 102, 103, 102, 103],
-        'rate': [1, 1, -1, 1, 1]
+        USER_COLUMNS[0]: [1, 2, 3, 4, 4],
+        USER_COLUMNS[1]: [101, 102, 103, 102, 103],
+        USER_COLUMNS[2]: [LIKE, LIKE, DISLIKE, LIKE, LIKE]
     })
     dessert_data = pd.DataFrame({
-        'user_id': [1, 2],
-        'recipe_id': [201, 202],
-        'rate': [1, -1]
+        USER_COLUMNS[0]: [1, 2],
+        USER_COLUMNS[1]: [201, 202],
+        USER_COLUMNS[2]: [LIKE, DISLIKE]
     })
 
-    # Simuler les fichiers CSV dans la classe User
+    # User CSV simulation
     uf.User._interactions_main = main_data
     uf.User._interactions_dessert = dessert_data
 
-    # Créer une instance utilisateur
+    # User creation
     user = uf.User(_type_of_dish="main")
     return user
 
@@ -73,9 +47,9 @@ def test_validity_type_of_dish_invalid():
 
 def test_pivot_table_of_df():
     main_data = pd.DataFrame({
-        'user_id': [1, 2, 3],
-        'recipe_id': [101, 102, 103],
-        'rate': [1, 1, -1]
+        USER_COLUMNS[0]: [1, 2, 3],
+        USER_COLUMNS[1]: [101, 102, 103],
+        USER_COLUMNS[2]: [LIKE, LIKE, DISLIKE]
     })
     pivot_table = uf.User.pivot_table_of_df(main_data)
     assert pivot_table.shape == (3, 3)
@@ -94,21 +68,21 @@ def test_abs_deviation():
     abs_dev = uf.User.abs_deviation(recipes_rating, pivot_table)
     assert abs_dev.shape == pivot_table.shape
 
-# Test `add_preferences` et `del_preferences`
+# Test `add_preferences` and `del_preferences`
 
 
 def test_add_preferences(setup_user):
     user = setup_user
-    user.add_preferences(101, 1)
+    user.add_preferences(101, LIKE)
     assert 101 in user.get_preferences
-    assert user.get_preferences[101] == 1
+    assert user.get_preferences[101] == LIKE
 
 # Test that a deleted recipe is no longer in user preferences
 
 
 def test_del_preferences(setup_user):
     user = setup_user
-    user.add_preferences(101, 1)
+    user.add_preferences(101, LIKE)
     user.del_preferences(101)
     assert 101 not in user.get_preferences
 
@@ -120,25 +94,26 @@ def test_del_preferences_invalid(setup_user):
     with pytest.raises(KeyError):
         user.del_preferences(999)
 
-
-# Test `recipe_suggestion`
+# Test recipe suggestion
 
 
 def test_recipe_suggestion(setup_user):
     # Test if the user as no preferences
     user = setup_user
     recipe_suggested = user.recipe_suggestion()
-    assert recipe_suggested in user.get_interactions_main['recipe_id'].values
+    assert recipe_suggested in user.get_interactions_main[
+        USER_COLUMNS[1]].values
     assert recipe_suggested not in user.get_preferences.keys()
     # Test if the user has no near neighbors
-    user.add_preferences(101, 1)
+    user.add_preferences(101, LIKE)
     recipe_suggested = user.recipe_suggestion()
     assert recipe_suggested not in user.get_preferences.keys()
-    assert recipe_suggested in user.get_interactions_main['recipe_id'].values
+    assert recipe_suggested in user.get_interactions_main[
+        USER_COLUMNS[1]].values
     # Test if all recipes have been suggested
-    user.add_preferences(102, -1)
+    user.add_preferences(102, DISLIKE)
     recipe_suggested = user.recipe_suggestion()
-    user.add_preferences(103, 1)
+    user.add_preferences(103, LIKE)
     with pytest.raises(ValueError):
         recipe_suggested = user.recipe_suggestion()
 
@@ -146,46 +121,46 @@ def test_recipe_suggestion(setup_user):
 # Test `get_graph`
 
 
-def test_get_graph_no_neighboors(setup_user):
+def test_get_graph_no_neighbors(setup_user):
     user = setup_user
 
-    with pytest.raises(uf.NoNeighboorError, match="No neighboor found"):
-        user.get_graph(1)
+    with pytest.raises(uf.NoNeighborError, match="No neighbor found"):
+        user.get_graph(LIKE)
 
-    user.add_preferences(101, 1)
+    user.add_preferences(101, LIKE)
     user.recipe_suggestion()
 
-    with pytest.raises(uf.NoNeighboorError, match="No neighboor found"):
-        user.get_graph(1)
+    with pytest.raises(uf.NoNeighborError, match="No neighbor found"):
+        user.get_graph(LIKE)
 
 
 def test_get_graph(setup_user):
     user = setup_user
-    user.add_preferences(102, 1)
+    user.add_preferences(102, LIKE)
     user.recipe_suggestion()
 
-    graph = user.get_graph(1)
+    graph = user.get_graph(LIKE)
+
     assert len(graph.nodes) == 2
     assert len(graph.edges) == 1
-    assert ("you", "user: 4") in graph.edges or (
-        "user: 4", "you") in graph.edges
+    assert ("you", "user 4", "102") in graph.edges or (
+        "user 4", "you", "102") in graph.edges
 
-    graph = user.get_graph(-1)
-    assert len(graph.nodes) == 2
+    graph = user.get_graph(DISLIKE)
+    assert len(graph.nodes) == 1
     assert len(graph.edges) == 0
 
 
-# Test `get_neighboor_data`
+# Test `get_neighbor_data`
 
-
-def test_common_likes(setup_user):
+def test_common_likes(setup_user,):
     user = setup_user
 
-    user.add_preferences(102, 1)
+    user.add_preferences(102, LIKE)
     user.recipe_suggestion()
 
-    df = user.get_neighboor_data()
+    df = user.get_neighbor_data(LIKE)
 
-    assert df.loc[4, "common likes"] == 1
-    assert df.loc[4, "common dislikes"] == 0
-    assert df.loc[4, "recipes to recommend"] == 1
+    assert df.loc[4, NEIGHBOR_DATA[0]] == 1
+    assert df.loc[4, NEIGHBOR_DATA[1]] == 0
+    assert df.loc[4, NEIGHBOR_DATA[2]] == 1
