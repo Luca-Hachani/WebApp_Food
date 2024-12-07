@@ -147,13 +147,13 @@ def test_get_graph(setup_user):
     assert ("you", "user 4", "102") in graph.edges or (
         "user 4", "you", "102") in graph.edges
 
+
     graph = user.get_graph(DISLIKE)
     assert len(graph.nodes) == 1
     assert len(graph.edges) == 0
 
 
 # Test `get_neighbor_data`
-
 
 def test_common_likes(setup_user,):
     user = setup_user
