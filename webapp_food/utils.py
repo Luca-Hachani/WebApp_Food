@@ -1,11 +1,14 @@
 """ This module contains utility functions for the webapp_food module.
-    The functions are used to search for recipe images on Google."""
+    The functions are used to search for recipe images on Google,
+    Transform graphs from Networkx to pyvis, interact between
+    the app and the user class, define errors."""
 from ast import literal_eval
 import re
 import requests
 from bs4 import BeautifulSoup
 import logging
 from pyvis.network import Network
+from webapp_food.settings import RECIPE_COLUMNS
 
 # use the requests library to search for images on Google
 logger = logging.getLogger(__name__)
@@ -15,8 +18,8 @@ class ImageError(Exception):
     """Raised when an image cannot be found for a recipe"""
 
 
-class NoNeighboorError(Exception):
-    """Raised when the user has no near neighboor"""
+class NoNeighborError(Exception):
+    """Raised when the user has no near neighbor"""
 
 
 def search_images(search_term):
@@ -67,8 +70,8 @@ def fetch_recipe_details(recipes_df, recipe_index):
     """Fetch recipe details (steps and ingredients)."""
     logger.debug(f"Fetching recipe details for recipe_index={recipe_index}")
     recipe = recipes_df.loc[recipe_index]
-    steps = literal_eval(recipe['steps'])
-    ingredients = literal_eval(recipe['ingredients'])
+    steps = literal_eval(recipe[RECIPE_COLUMNS[2]])
+    ingredients = literal_eval(recipe[RECIPE_COLUMNS[4]])
     return steps, ingredients
 
 
@@ -83,7 +86,7 @@ def visualize_graph(graph):
                  nodes and {len(graph.edges)} edges")
     # Create a PyVis Network object
     net = Network(notebook=True, width="100%",
-                  height="600px", cdn_resources='remote')
+                  height="300px", cdn_resources='remote')
 
     # Convert NetworkX graph to PyVis
     net.from_nx(graph)
