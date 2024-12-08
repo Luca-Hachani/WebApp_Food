@@ -59,6 +59,8 @@ of representing "tastes" was wrong.
    :alt: Visualization of the SVD and TSNE reduction
    :align: center
 
+   Visualization of the SVD and TSNE reduction
+
 Method 2: Network Graphs
 -------------------------
 
@@ -70,8 +72,9 @@ recommendation algorithm.
 
 .. image:: ../img/preprocessing_graphs/network1.png
    :alt: Visualization of the network graph
-   :width: 400px
    :align: center
+
+   Visualization of the network graph
 
 To address this, we applied the following criteria:
 
@@ -88,18 +91,21 @@ incorporating both likes and dislikes.
 
 .. image:: ../img/preprocessing_graphs/network2.png
    :alt: Visualization of the network graph with dropped isolated users
-   :width: 400px
    :align: center
+
+   Visualization of the network graph with dropped isolated users
 
 .. image:: ../img/preprocessing_graphs/network3.png
    :alt: Visualization of sub network graph of user 2282846
-   :width: 400px
    :align: center
+
+   Visualization of sub network graph of user 2282846
 
 .. image:: ../img/preprocessing_graphs/network4.png
    :alt: Visualization of sub network graph of user 581992
-   :width: 400px
    :align: center
+
+   Visualization of sub network graph of user 581992
 
 Refining the Visualization
 ==========================
