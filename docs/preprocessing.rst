@@ -55,7 +55,7 @@ that users who were suppose to be close, were not close on the graph. Since, the
 SVD produces coefficients that were difficult to interpret, our initial assumption 
 of representing "tastes" was wrong.
 
-.. image:: ./img/preprocessing_graphs/SVD_TSNE.png
+.. image:: ../img/preprocessing_graphs/SVD_TSNE.png
    :alt: Visualization of the SVD and TSNE reduction
    :width: 400px
    :align: center
@@ -69,8 +69,8 @@ graph highlighted some isolated users who only liked unique recipes that no one
 else rated. These users and their unique recipes provided no useful insight for the 
 recommendation algorithm.
 
-.. image:: ./img/preprocessing_graphs/network1.png
-   :alt: Visualization of the SVD and TSNE reduction
+.. image:: ../img/preprocessing_graphs/network1.png
+   :alt: Visualization of the network graph
    :width: 400px
    :align: center
 
@@ -87,18 +87,18 @@ users (edges shown in green). However, the global graph remained unreadable.
 To improve readability, we chose to display subgraphs from random samples of users, 
 incorporating both likes and dislikes.
 
-.. image:: ./img/preprocessing_graphs/network2.png
-   :alt: Visualization of the SVD and TSNE reduction
+.. image:: ../img/preprocessing_graphs/network2.png
+   :alt: Visualization of the network graph with dropped isolated users
    :width: 400px
    :align: center
 
-.. image:: ./img/preprocessing_graphs/network3.png
-   :alt: Visualization of the SVD and TSNE reduction
+.. image:: ../img/preprocessing_graphs/network3.png
+   :alt: Visualization of sub network graph of user 2282846
    :width: 400px
    :align: center
 
-.. image:: ./img/preprocessing_graphs/network4.png
-   :alt: Visualization of the SVD and TSNE reduction
+.. image:: ../img/preprocessing_graphs/network4.png
+   :alt: Visualization of sub network graph of user 581992
    :width: 400px
    :align: center
 
