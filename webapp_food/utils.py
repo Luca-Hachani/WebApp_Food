@@ -7,13 +7,20 @@ The functions include:
 - Interacting between the app and the User class.
 - Defining custom exceptions for specific errors.
 """
+from __future__ import annotations
 from ast import literal_eval
 import re
 import requests
 from bs4 import BeautifulSoup
 import logging
 from pyvis.network import Network
-from webapp_food.settings import RECIPE_COLUMNS
+from webapp_food.settings import RECIPE_COLUMNS, COLORS
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from webapp_food.user_fooder import User
+    from pandas import DataFrame
+    from networkx import Graph
 
 # use the requests library to search for images on Google
 logger = logging.getLogger(__name__)
@@ -108,7 +115,7 @@ def print_image(search_term: str, n: int = 1) -> list:
         raise ImageError("No image found for this recipe") from exc
 
 
-def update_preferences(user, recipe_index: int,
+def update_preferences(user: User, recipe_index: int,
                        preference_value: int) -> None:
     """
     Updates user preferences based on like or dislike actions.
@@ -131,7 +138,8 @@ def update_preferences(user, recipe_index: int,
     user.add_preferences(recipe_index, preference_value)
 
 
-def fetch_recipe_details(recipes_df, recipe_index: int) -> tuple[list, list]:
+def fetch_recipe_details(recipes_df: Dataframe, recipe_index: int)\
+        -> tuple[list, list]:
     """
     Fetches recipe details including steps and ingredients.
 
@@ -166,7 +174,7 @@ def fetch_recipe_details(recipes_df, recipe_index: int) -> tuple[list, list]:
     return steps, ingredients
 
 
-def visualize_graph(graph) -> None:
+def visualize_graph(graph: Graph) -> None:
     """
     Saves a NetworkX graph as an interactive PyVis HTML visualization.
 
@@ -199,6 +207,12 @@ def visualize_graph(graph) -> None:
     # Create a PyVis Network object
     net = Network(notebook=True, width="100%",
                   height="300px", cdn_resources='remote')
+    # Changing the node color
+    for node in graph.nodes:
+        net.add_node(node, color=COLORS['first_color'], size=12)
+    # Changing the edge color
+    for edge in graph.edges:
+        net.add_edge(edge[0], edge[1], color=COLORS['second_color'])
 
     # Convert NetworkX graph to PyVis
     net.from_nx(graph)
