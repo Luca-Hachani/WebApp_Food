@@ -247,10 +247,15 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for webapp_food.utils</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot; This module contains utility functions for the webapp_food module.</span>
-<span class="sd">    The functions are used to search for recipe images on Google,</span>
-<span class="sd">    Transform graphs from Networkx to pyvis, interact between</span>
-<span class="sd">    the app and the user class, define errors.&quot;&quot;&quot;</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module contains utility functions for the `webapp_food` module.</span>
+
+<span class="sd">The functions include:</span>
+<span class="sd">- Searching for recipe images on Google.</span>
+<span class="sd">- Transforming graphs from NetworkX to PyVis.</span>
+<span class="sd">- Interacting between the app and the User class.</span>
+<span class="sd">- Defining custom exceptions for specific errors.</span>
+<span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">from</span> <span class="nn">ast</span> <span class="kn">import</span> <span class="n">literal_eval</span>
 <span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">import</span> <span class="nn">requests</span>
@@ -266,24 +271,47 @@
 <div class="viewcode-block" id="ImageError">
 <a class="viewcode-back" href="../../webapp_food.html#webapp_food.utils.ImageError">[docs]</a>
 <span class="k">class</span> <span class="nc">ImageError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Raised when an image cannot be found for a recipe&quot;&quot;&quot;</span></div>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Raised when an image cannot be found for a recipe</span>
+<span class="sd">    &quot;&quot;&quot;</span></div>
 
 
 
 <div class="viewcode-block" id="NoNeighborError">
 <a class="viewcode-back" href="../../webapp_food.html#webapp_food.utils.NoNeighborError">[docs]</a>
 <span class="k">class</span> <span class="nc">NoNeighborError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Raised when the user has no near neighbor&quot;&quot;&quot;</span></div>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Raised when the user has no near neighbor</span>
+<span class="sd">    &quot;&quot;&quot;</span></div>
 
 
 
 <div class="viewcode-block" id="search_images">
 <a class="viewcode-back" href="../../webapp_food.html#webapp_food.utils.search_images">[docs]</a>
-<span class="k">def</span> <span class="nf">search_images</span><span class="p">(</span><span class="n">search_term</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;use the requests library to search for images on Google</span>
+<span class="k">def</span> <span class="nf">search_images</span><span class="p">(</span><span class="n">search_term</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Uses the requests library to search for images on Google.</span>
 
-<span class="sd">    Args:</span>
-<span class="sd">        search_term (string): name of the image to search for</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    search_term : str</span>
+<span class="sd">        The name or term to search for images.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str</span>
+<span class="sd">        The HTML content of the Google Images search results.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    - The search is performed by making a GET request to Google Images.</span>
+<span class="sd">    - This function does not parse or process the returned HTML; it simply</span>
+<span class="sd">      fetches the response.</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    &gt;&gt;&gt; html_content = search_images(&quot;chocolate cake&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; print(html_content[:100])  # Print the first 100 characters</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;In search_images with search_term=</span><span class="si">{</span><span class="n">search_term</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;https://www.google.com/search?tbm=isch&amp;q=&#39;</span> <span class="o">+</span> <span class="n">search_term</span>
@@ -294,11 +322,32 @@
 
 <div class="viewcode-block" id="print_image">
 <a class="viewcode-back" href="../../webapp_food.html#webapp_food.utils.print_image">[docs]</a>
-<span class="k">def</span> <span class="nf">print_image</span><span class="p">(</span><span class="n">search_term</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;search an image and return a printable image</span>
+<span class="k">def</span> <span class="nf">print_image</span><span class="p">(</span><span class="n">search_term</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Searches for an image and returns a printable URL.</span>
 
-<span class="sd">    Args:</span>
-<span class="sd">        search_term (string): name of the image to search for</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    search_term : str</span>
+<span class="sd">        The name or term to search for images.</span>
+<span class="sd">    n : int, optional</span>
+<span class="sd">        The number of images to fetch, by default 1.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list of str</span>
+<span class="sd">        A list of image URLs.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ImageError</span>
+<span class="sd">        If no images are found or an error occurs during the search.</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    &gt;&gt;&gt; images = print_image(&quot;chocolate cake&quot;, n=1)</span>
+<span class="sd">    &gt;&gt;&gt; print(images)</span>
+<span class="sd">    [&#39;https://example.com/image.jpg&#39;]</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;In print_image with search_term=</span><span class="si">{</span><span class="n">search_term</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>
@@ -322,8 +371,24 @@
 
 <div class="viewcode-block" id="update_preferences">
 <a class="viewcode-back" href="../../webapp_food.html#webapp_food.utils.update_preferences">[docs]</a>
-<span class="k">def</span> <span class="nf">update_preferences</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">recipe_index</span><span class="p">,</span> <span class="n">preference_value</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Update user preferences based on like or dislike actions.&quot;&quot;&quot;</span>
+<span class="k">def</span> <span class="nf">update_preferences</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">recipe_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                       <span class="n">preference_value</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Updates user preferences based on like or dislike actions.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    user : User</span>
+<span class="sd">        The user object to update preferences for.</span>
+<span class="sd">    recipe_index : int</span>
+<span class="sd">        The index of the recipe to update preferences for.</span>
+<span class="sd">    preference_value : int</span>
+<span class="sd">        The preference value to assign (e.g., +1 for like, -1 for dislike).</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    &gt;&gt;&gt; update_preferences(user, recipe_index=42, preference_value=1)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Updating preferences for user </span><span class="si">{</span><span class="n">user</span><span class="si">}</span><span class="s2"> with recipe_index=</span><span class="si">{</span>
 <span class="w">                 </span><span class="n">recipe_index</span><span class="si">}</span><span class="s2"> and preference_value=</span><span class="si">{</span><span class="n">preference_value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">user</span><span class="o">.</span><span class="n">add_preferences</span><span class="p">(</span><span class="n">recipe_index</span><span class="p">,</span> <span class="n">preference_value</span><span class="p">)</span></div>
@@ -332,8 +397,34 @@
 
 <div class="viewcode-block" id="fetch_recipe_details">
 <a class="viewcode-back" href="../../webapp_food.html#webapp_food.utils.fetch_recipe_details">[docs]</a>
-<span class="k">def</span> <span class="nf">fetch_recipe_details</span><span class="p">(</span><span class="n">recipes_df</span><span class="p">,</span> <span class="n">recipe_index</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Fetch recipe details (steps and ingredients).&quot;&quot;&quot;</span>
+<span class="k">def</span> <span class="nf">fetch_recipe_details</span><span class="p">(</span><span class="n">recipes_df</span><span class="p">,</span> <span class="n">recipe_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="nb">list</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Fetches recipe details including steps and ingredients.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    recipes_df : pd.DataFrame</span>
+<span class="sd">        The DataFrame containing recipe information.</span>
+<span class="sd">    recipe_index : int</span>
+<span class="sd">        The index of the recipe to fetch details for.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    tuple of list</span>
+<span class="sd">        A tuple containing two lists:</span>
+<span class="sd">        - steps : list of str</span>
+<span class="sd">            The steps required to prepare the recipe.</span>
+<span class="sd">        - ingredients : list of str</span>
+<span class="sd">            The ingredients needed for the recipe.</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    &gt;&gt;&gt; steps, ingredients = fetch_recipe_details(recipes_df, recipe_index=42)</span>
+<span class="sd">    &gt;&gt;&gt; print(steps)</span>
+<span class="sd">    [&#39;Step 1&#39;, &#39;Step 2&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; print(ingredients)</span>
+<span class="sd">    [&#39;Ingredient 1&#39;, &#39;Ingredient 2&#39;]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fetching recipe details for recipe_index=</span><span class="si">{</span><span class="n">recipe_index</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">recipe</span> <span class="o">=</span> <span class="n">recipes_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">recipe_index</span><span class="p">]</span>
     <span class="n">steps</span> <span class="o">=</span> <span class="n">literal_eval</span><span class="p">(</span><span class="n">recipe</span><span class="p">[</span><span class="n">RECIPE_COLUMNS</span><span class="p">[</span><span class="mi">2</span><span class="p">]])</span>
@@ -344,7 +435,28 @@
 
 <div class="viewcode-block" id="visualize_graph">
 <a class="viewcode-back" href="../../webapp_food.html#webapp_food.utils.visualize_graph">[docs]</a>
-<span class="k">def</span> <span class="nf">visualize_graph</span><span class="p">(</span><span class="n">graph</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">visualize_graph</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Saves a NetworkX graph as an interactive PyVis HTML visualization.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    graph : networkx.Graph</span>
+<span class="sd">        The NetworkX graph to visualize.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    - The graph is saved as an HTML file at </span>
+<span class="sd">      `webapp_food/graphs/neighbour.html`.</span>
+<span class="sd">    - The PyVis library is used to create an interactive graph.</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    &gt;&gt;&gt; import networkx as nx</span>
+<span class="sd">    &gt;&gt;&gt; G = nx.erdos_renyi_graph(10, 0.5)</span>
+<span class="sd">    &gt;&gt;&gt; visualize_graph(G)</span>
+<span class="sd">    # The graph visualization is saved in the specified HTML file.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Saves a NetworkX graph using PyVis.</span>
 

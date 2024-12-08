@@ -66,6 +66,75 @@ def test_abs_deviation():
     abs_dev = uf.User.abs_deviation(recipes_rating, pivot_table)
     assert abs_dev.shape == pivot_table.shape
 
+# Test `percentile_filter`
+
+
+def test_percentile_filter():
+    # Example data for testing
+    data_A = {
+        "dist": [1, 1, 1, 1]
+    }
+    interactions_pivot_A = pd.DataFrame(data_A)
+    data_B = {
+        "dist": [1, 2, 5, 3, 1, 8, 5, 9]
+    }
+    interactions_pivot_B = pd.DataFrame(data_B)
+    data_C = {
+        "dist": []
+    }
+    interactions_pivot_C = pd.DataFrame(data_C)
+
+    # Case 1: No filtering needed
+    filtered_df, nb_rows = uf.User.percentile_filter(interactions_pivot_A,
+                                                     nb_filtered_rows_min=1,
+                                                     nb_filtered_rows_max=6)
+    assert nb_rows == len(interactions_pivot_A), \
+        "The number of rows should not change."
+    pd.testing.assert_frame_equal(filtered_df.reset_index(drop=True),
+                                  interactions_pivot_A.reset_index(drop=True),
+                                  "The DataFrame should not be modified.")
+
+    # Case 2: Filtering with normal limits
+    filtered_df, nb_rows = uf.User.percentile_filter(interactions_pivot_B,
+                                                     nb_filtered_rows_min=1,
+                                                     nb_filtered_rows_max=6)
+    expected_data = {"dist": [1, 1]}  # Based on the 10th percentile
+    expected_df = pd.DataFrame(expected_data)
+    assert nb_rows == 2, "The number of filtered rows should be 2."
+    pd.testing.assert_frame_equal(filtered_df.reset_index(drop=True),
+                                  expected_df.reset_index(drop=True),
+                                  "The filtered DataFrame is incorrect.")
+
+    # Case 3: Fewer filtered rows than `nb_filtered_rows_min`
+    filtered_df, nb_rows = uf.User.percentile_filter(interactions_pivot_B,
+                                                     nb_filtered_rows_min=5,
+                                                     nb_filtered_rows_max=10)
+    assert nb_rows == 5, \
+        "The number of rows should equal the minimum imposed value."
+    pd.testing.assert_frame_equal(filtered_df.reset_index(drop=True),
+                                  interactions_pivot_B.reset_index(drop=True),
+                                  "The DataFrame should not be modified.")
+
+    # Case 4: More filtered rows than `nb_filtered_rows_max`
+    filtered_df, nb_rows = uf.User.percentile_filter(interactions_pivot_B,
+                                                     nb_filtered_rows_min=1,
+                                                     nb_filtered_rows_max=1)
+    assert nb_rows == 1, \
+        "The number of rows should be limited to the maximum imposed value."
+    pd.testing.assert_frame_equal(filtered_df.reset_index(drop=True),
+                                  interactions_pivot_B.reset_index(drop=True),
+                                  "The DataFrame should not be modified.")
+
+    # Case 5: Empty DataFrame
+    filtered_df, nb_rows = uf.User.percentile_filter(interactions_pivot_C,
+                                                     nb_filtered_rows_min=1,
+                                                     nb_filtered_rows_max=10)
+    assert nb_rows == 1, \
+        "The number of rows should equal the minimum imposed value."
+    pd.testing.assert_frame_equal(filtered_df.reset_index(drop=True),
+                                  interactions_pivot_C.reset_index(drop=True),
+                                  "The DataFrame should not be modified.")
+
 # Test `add_preferences` and `del_preferences`
 
 

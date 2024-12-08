@@ -1,8 +1,14 @@
-""" Main file of the web application.
-It allows the user to choose between a main dish or a dessert,
-to like or dislike the recipes proposed and
-to see the graph of adjency for the current user.
-The user can also see the recommended recipes and their details."""
+"""
+Main file of the web application.
+
+This module manages the main functionality of the Fooder web application,
+including:
+- Choosing between main dishes and desserts.
+- Liking or disliking recommended recipes.
+- Viewing the graph of adjency for the current user.
+- Displaying recommended recipes and their details.
+"""
+
 import streamlit as st
 from webapp_food.utils import update_preferences, print_image, \
     ImageError, fetch_recipe_details, visualize_graph, NoNeighborError

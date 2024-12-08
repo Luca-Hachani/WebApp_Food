@@ -313,11 +313,13 @@ interactions_pivot: pd.DataFrame) -&gt; pd.DataFrame</p>
 existing interactions.</p>
 </div></blockquote>
 <dl>
-<dt>near_neighbor(recipes_id: list, interactions: pd.DataFrame,</dt><dd><blockquote>
-<div><p>interactions_pivot_input: pd.DataFrame) -&gt; pd.DataFrame</p>
+<dt>def percentile_filter(interactions_pivot: pd.DataFrame,</dt><dd><blockquote>
+<div><p>nb_filtered_rows_min: int=5,
+nb_filtered_rows_max: int=100):</p>
 </div></blockquote>
-<p>Selects close neighbor users based on their distances
-and interactions.</p>
+<p>Filters a DataFrame of user-recipe interactions based on
+the 10th percentile of a “dist” column, with constraints on
+the minimum and maximum number of rows.</p>
 </dd>
 <dt>load_datasets() -&gt; None</dt><dd><p>Loads datasets for main dishes and desserts, if not already loaded.</p>
 </dd>
@@ -330,6 +332,13 @@ of dish.</p>
 </dd>
 <dt>get_near_neighbor() -&gt; pd.DataFrame</dt><dd><p>Returns the DataFrame of near neighbors.</p>
 </dd>
+<dt>near_neighbor(recipes_id: list, recipes_rating: np.ndarray,</dt><dd><p>interactions: pd.DataFrame,
+interactions_pivot_input: pd.DataFrame) -&gt; pd.DataFrame</p>
+</dd>
+</dl>
+<p>Selects close neighbor users based on their distances
+and interactions.</p>
+<dl class="simple">
 <dt>recipe_suggestion() -&gt; int</dt><dd><p>Suggests a recipe based on the user’s preferences and existing
 interactions. If no preferences exist, a random recipe is suggested.</p>
 </dd>
@@ -561,12 +570,14 @@ recipes to recommend.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="webapp_food.user_fooder.User.near_neighbor">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">near_neighbor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">recipes_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interactions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interactions_pivot_input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="_modules/webapp_food/user_fooder.html#User.near_neighbor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#webapp_food.user_fooder.User.near_neighbor" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">near_neighbor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">recipes_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recipes_rating</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interactions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interactions_pivot_input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="_modules/webapp_food/user_fooder.html#User.near_neighbor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#webapp_food.user_fooder.User.near_neighbor" title="Link to this definition">¶</a></dt>
 <dd><p>Selects nearby users based on distances and their interactions.</p>
 <section id="id14">
 <h4>Parameters<a class="headerlink" href="#id14" title="Link to this heading">¶</a></h4>
 <dl class="simple">
 <dt>recipes_id<span class="classifier">list</span></dt><dd><p>List of recipe IDs already reviewed by the new user.</p>
+</dd>
+<dt>recipes_rating<span class="classifier">np.ndarray</span></dt><dd><p>Preferences assigned to recipes by the new user (1D array).</p>
 </dd>
 <dt>interactions<span class="classifier">pd.DataFrame</span></dt><dd><p>DataFrame containing user-recipe interactions.</p>
 </dd>
@@ -585,19 +596,78 @@ by the new user.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="webapp_food.user_fooder.User.percentile_filter">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">percentile_filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">interactions_pivot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nb_filtered_rows_min</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nb_filtered_rows_max</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">DataFrame</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/webapp_food/user_fooder.html#User.percentile_filter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#webapp_food.user_fooder.User.percentile_filter" title="Link to this definition">¶</a></dt>
+<dd><p>Filters a DataFrame of user-recipe interactions based on
+the 10th percentile of a “dist” column, with constraints on
+the minimum and maximum number of rows.</p>
+<p>The function applies a filter to retain rows where
+the “dist” value is less than or equal to the 10th percentile of
+the “dist” column. It ensures that the resulting filtered DataFrame
+has at least <cite>nb_filtered_rows_min</cite> rows and
+at most <cite>nb_filtered_rows_max</cite> rows.</p>
+<section id="id16">
+<h4>Parameters<a class="headerlink" href="#id16" title="Link to this heading">¶</a></h4>
+<dl class="simple">
+<dt>interactions_pivot<span class="classifier">pd.DataFrame</span></dt><dd><p>The input pivot table containing a “dist” column used for
+filtering.</p>
+</dd>
+<dt>nb_filtered_rows_min<span class="classifier">int, optional</span></dt><dd><p>The minimum number of rows to retain in the filtered DataFrame,
+by default 5.</p>
+</dd>
+<dt>nb_filtered_rows_max<span class="classifier">int, optional</span></dt><dd><p>The maximum number of rows to retain in the filtered DataFrame,
+by default 100.</p>
+</dd>
+</dl>
+</section>
+<section id="id17">
+<h4>Returns<a class="headerlink" href="#id17" title="Link to this heading">¶</a></h4>
+<dl class="simple">
+<dt>tuple</dt><dd><p>A tuple containing:
+- pd.DataFrame: The filtered pivot table.
+- int: The number of rows in the filtered DataFrame.</p>
+</dd>
+</dl>
+</section>
+<section id="id18">
+<h4>Notes<a class="headerlink" href="#id18" title="Link to this heading">¶</a></h4>
+<ul class="simple">
+<li><p>If the number of rows after filtering by the 10th percentile is less</p></li>
+</ul>
+<p>than <cite>nb_filtered_rows_min</cite>, no filtering is applied.
+- If the filtered rows exceed <cite>nb_filtered_rows_max</cite>,
+additional filtering is applied to meet the maximum constraint.</p>
+</section>
+<section id="id19">
+<h4>Example<a class="headerlink" href="#id19" title="Link to this heading">¶</a></h4>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interactions_pivot</span><span class="p">[</span><span class="s2">&quot;dist&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">9</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">filtered_df</span><span class="p">,</span> <span class="n">nb_rows</span> <span class="o">=</span> <span class="n">percentile_filter</span><span class="p">(</span><span class="n">interactions_pivot</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">filtered_df</span><span class="p">)</span>
+<span class="go">    dist</span>
+<span class="go">0    1</span>
+<span class="go">4    1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">nb_rows</span><span class="p">)</span>
+<span class="go">2</span>
+</pre></div>
+</div>
+</section>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="webapp_food.user_fooder.User.pivot_table_of_df">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pivot_table_of_df</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">interactions_reduce</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="_modules/webapp_food/user_fooder.html#User.pivot_table_of_df"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#webapp_food.user_fooder.User.pivot_table_of_df" title="Link to this definition">¶</a></dt>
 <dd><p>Transforms a user-recipe interaction DataFrame into a pivot table.</p>
-<section id="id16">
-<h4>Parameters<a class="headerlink" href="#id16" title="Link to this heading">¶</a></h4>
+<section id="id20">
+<h4>Parameters<a class="headerlink" href="#id20" title="Link to this heading">¶</a></h4>
 <dl class="simple">
 <dt>interactions_reduce<span class="classifier">pd.DataFrame</span></dt><dd><p>Filtered interaction DataFrame containing the columns “user_id”,
 “recipe_id”, and “rating”.</p>
 </dd>
 </dl>
 </section>
-<section id="id17">
-<h4>Returns<a class="headerlink" href="#id17" title="Link to this heading">¶</a></h4>
+<section id="id21">
+<h4>Returns<a class="headerlink" href="#id21" title="Link to this heading">¶</a></h4>
 <dl class="simple">
 <dt>pd.DataFrame</dt><dd><p>A pivot table with user IDs as rows, recipe IDs as columns, and
 ratings as values. Missing values are replaced with 0.</p>
@@ -611,15 +681,15 @@ ratings as values. Missing values are replaced with 0.</p>
 <span class="sig-name descname"><span class="pre">recipe_suggestion</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="reference internal" href="_modules/webapp_food/user_fooder.html#User.recipe_suggestion"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#webapp_food.user_fooder.User.recipe_suggestion" title="Link to this definition">¶</a></dt>
 <dd><p>Suggests a recipe based on the new user’s preferences and
 existing interactions.</p>
-<section id="id18">
-<h4>Returns<a class="headerlink" href="#id18" title="Link to this heading">¶</a></h4>
+<section id="id22">
+<h4>Returns<a class="headerlink" href="#id22" title="Link to this heading">¶</a></h4>
 <dl class="simple">
 <dt>int</dt><dd><p>Suggested recipe ID.</p>
 </dd>
 </dl>
 </section>
-<section id="id19">
-<h4>Notes<a class="headerlink" href="#id19" title="Link to this heading">¶</a></h4>
+<section id="id23">
+<h4>Notes<a class="headerlink" href="#id23" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>If the new user has no preferences, a random recipe is suggested.</p></li>
 <li><p>The suggestion is based on the similarity of nearby users.</p></li>
@@ -631,15 +701,15 @@ existing interactions.</p>
 <dt class="sig sig-object py" id="webapp_food.user_fooder.User.validity_type_of_dish">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">validity_type_of_dish</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type_of_dish</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/webapp_food/user_fooder.html#User.validity_type_of_dish"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#webapp_food.user_fooder.User.validity_type_of_dish" title="Link to this definition">¶</a></dt>
 <dd><p>Validates the dish type.</p>
-<section id="id20">
-<h4>Parameters<a class="headerlink" href="#id20" title="Link to this heading">¶</a></h4>
+<section id="id24">
+<h4>Parameters<a class="headerlink" href="#id24" title="Link to this heading">¶</a></h4>
 <dl class="simple">
 <dt>type_of_dish<span class="classifier">str</span></dt><dd><p>The provided dish type (must be “main” or “dessert”).</p>
 </dd>
 </dl>
 </section>
-<section id="id21">
-<h4>Raises<a class="headerlink" href="#id21" title="Link to this heading">¶</a></h4>
+<section id="id25">
+<h4>Raises<a class="headerlink" href="#id25" title="Link to this heading">¶</a></h4>
 <dl class="simple">
 <dt>ValueError</dt><dd><p>If the dish type is neither “main” nor “dessert”.</p>
 </dd>
@@ -653,10 +723,12 @@ existing interactions.</p>
 </section>
 <section id="module-webapp_food.utils">
 <span id="webapp-food-utils-module"></span><h2>webapp_food.utils module<a class="headerlink" href="#module-webapp_food.utils" title="Link to this heading">¶</a></h2>
-<p>This module contains utility functions for the webapp_food module.
-The functions are used to search for recipe images on Google,
-Transform graphs from Networkx to pyvis, interact between
-the app and the user class, define errors.</p>
+<p>This module contains utility functions for the <cite>webapp_food</cite> module.</p>
+<p>The functions include:
+- Searching for recipe images on Google.
+- Transforming graphs from NetworkX to PyVis.
+- Interacting between the app and the User class.
+- Defining custom exceptions for specific errors.</p>
 <dl class="py exception">
 <dt class="sig sig-object py" id="webapp_food.utils.ImageError">
 <em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">webapp_food.utils.</span></span><span class="sig-name descname"><span class="pre">ImageError</span></span><a class="reference internal" href="_modules/webapp_food/utils.html#ImageError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#webapp_food.utils.ImageError" title="Link to this definition">¶</a></dt>
@@ -673,44 +745,170 @@ the app and the user class, define errors.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="webapp_food.utils.fetch_recipe_details">
-<span class="sig-prename descclassname"><span class="pre">webapp_food.utils.</span></span><span class="sig-name descname"><span class="pre">fetch_recipe_details</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">recipes_df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recipe_index</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/webapp_food/utils.html#fetch_recipe_details"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#webapp_food.utils.fetch_recipe_details" title="Link to this definition">¶</a></dt>
-<dd><p>Fetch recipe details (steps and ingredients).</p>
+<span class="sig-prename descclassname"><span class="pre">webapp_food.utils.</span></span><span class="sig-name descname"><span class="pre">fetch_recipe_details</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">recipes_df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recipe_index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/webapp_food/utils.html#fetch_recipe_details"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#webapp_food.utils.fetch_recipe_details" title="Link to this definition">¶</a></dt>
+<dd><p>Fetches recipe details including steps and ingredients.</p>
+<section id="id26">
+<h3>Parameters<a class="headerlink" href="#id26" title="Link to this heading">¶</a></h3>
+<dl class="simple">
+<dt>recipes_df<span class="classifier">pd.DataFrame</span></dt><dd><p>The DataFrame containing recipe information.</p>
+</dd>
+<dt>recipe_index<span class="classifier">int</span></dt><dd><p>The index of the recipe to fetch details for.</p>
+</dd>
+</dl>
+</section>
+<section id="id27">
+<h3>Returns<a class="headerlink" href="#id27" title="Link to this heading">¶</a></h3>
+<dl>
+<dt>tuple of list</dt><dd><p>A tuple containing two lists:
+- steps : list of str</p>
+<blockquote>
+<div><p>The steps required to prepare the recipe.</p>
+</div></blockquote>
+<ul class="simple">
+<li><dl class="simple">
+<dt>ingredients<span class="classifier">list of str</span></dt><dd><p>The ingredients needed for the recipe.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</section>
+<section id="id28">
+<h3>Example<a class="headerlink" href="#id28" title="Link to this heading">¶</a></h3>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">steps</span><span class="p">,</span> <span class="n">ingredients</span> <span class="o">=</span> <span class="n">fetch_recipe_details</span><span class="p">(</span><span class="n">recipes_df</span><span class="p">,</span> <span class="n">recipe_index</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">steps</span><span class="p">)</span>
+<span class="go">[&#39;Step 1&#39;, &#39;Step 2&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">ingredients</span><span class="p">)</span>
+<span class="go">[&#39;Ingredient 1&#39;, &#39;Ingredient 2&#39;]</span>
+</pre></div>
+</div>
+</section>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="webapp_food.utils.print_image">
-<span class="sig-prename descclassname"><span class="pre">webapp_food.utils.</span></span><span class="sig-name descname"><span class="pre">print_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">search_term</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/webapp_food/utils.html#print_image"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#webapp_food.utils.print_image" title="Link to this definition">¶</a></dt>
-<dd><p>search an image and return a printable image</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>search_term</strong> (<em>string</em>) – name of the image to search for</p>
+<span class="sig-prename descclassname"><span class="pre">webapp_food.utils.</span></span><span class="sig-name descname"><span class="pre">print_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">search_term</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="reference internal" href="_modules/webapp_food/utils.html#print_image"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#webapp_food.utils.print_image" title="Link to this definition">¶</a></dt>
+<dd><p>Searches for an image and returns a printable URL.</p>
+<section id="id29">
+<h3>Parameters<a class="headerlink" href="#id29" title="Link to this heading">¶</a></h3>
+<dl class="simple">
+<dt>search_term<span class="classifier">str</span></dt><dd><p>The name or term to search for images.</p>
+</dd>
+<dt>n<span class="classifier">int, optional</span></dt><dd><p>The number of images to fetch, by default 1.</p>
 </dd>
 </dl>
+</section>
+<section id="id30">
+<h3>Returns<a class="headerlink" href="#id30" title="Link to this heading">¶</a></h3>
+<dl class="simple">
+<dt>list of str</dt><dd><p>A list of image URLs.</p>
+</dd>
+</dl>
+</section>
+<section id="id31">
+<h3>Raises<a class="headerlink" href="#id31" title="Link to this heading">¶</a></h3>
+<dl class="simple">
+<dt>ImageError</dt><dd><p>If no images are found or an error occurs during the search.</p>
+</dd>
+</dl>
+</section>
+<section id="id32">
+<h3>Example<a class="headerlink" href="#id32" title="Link to this heading">¶</a></h3>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">images</span> <span class="o">=</span> <span class="n">print_image</span><span class="p">(</span><span class="s2">&quot;chocolate cake&quot;</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">images</span><span class="p">)</span>
+<span class="go">[&#39;https://example.com/image.jpg&#39;]</span>
+</pre></div>
+</div>
+</section>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="webapp_food.utils.search_images">
-<span class="sig-prename descclassname"><span class="pre">webapp_food.utils.</span></span><span class="sig-name descname"><span class="pre">search_images</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">search_term</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/webapp_food/utils.html#search_images"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#webapp_food.utils.search_images" title="Link to this definition">¶</a></dt>
-<dd><p>use the requests library to search for images on Google</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>search_term</strong> (<em>string</em>) – name of the image to search for</p>
+<span class="sig-prename descclassname"><span class="pre">webapp_food.utils.</span></span><span class="sig-name descname"><span class="pre">search_images</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">search_term</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/webapp_food/utils.html#search_images"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#webapp_food.utils.search_images" title="Link to this definition">¶</a></dt>
+<dd><p>Uses the requests library to search for images on Google.</p>
+<section id="id33">
+<h3>Parameters<a class="headerlink" href="#id33" title="Link to this heading">¶</a></h3>
+<dl class="simple">
+<dt>search_term<span class="classifier">str</span></dt><dd><p>The name or term to search for images.</p>
 </dd>
 </dl>
+</section>
+<section id="id34">
+<h3>Returns<a class="headerlink" href="#id34" title="Link to this heading">¶</a></h3>
+<dl class="simple">
+<dt>str</dt><dd><p>The HTML content of the Google Images search results.</p>
+</dd>
+</dl>
+</section>
+<section id="id35">
+<h3>Notes<a class="headerlink" href="#id35" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>The search is performed by making a GET request to Google Images.</p></li>
+<li><p>This function does not parse or process the returned HTML; it simply
+fetches the response.</p></li>
+</ul>
+</section>
+<section id="id36">
+<h3>Example<a class="headerlink" href="#id36" title="Link to this heading">¶</a></h3>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">html_content</span> <span class="o">=</span> <span class="n">search_images</span><span class="p">(</span><span class="s2">&quot;chocolate cake&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">html_content</span><span class="p">[:</span><span class="mi">100</span><span class="p">])</span>  <span class="c1"># Print the first 100 characters</span>
+</pre></div>
+</div>
+</section>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="webapp_food.utils.update_preferences">
-<span class="sig-prename descclassname"><span class="pre">webapp_food.utils.</span></span><span class="sig-name descname"><span class="pre">update_preferences</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">user</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recipe_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">preference_value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/webapp_food/utils.html#update_preferences"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#webapp_food.utils.update_preferences" title="Link to this definition">¶</a></dt>
-<dd><p>Update user preferences based on like or dislike actions.</p>
+<span class="sig-prename descclassname"><span class="pre">webapp_food.utils.</span></span><span class="sig-name descname"><span class="pre">update_preferences</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">user</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recipe_index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">preference_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/webapp_food/utils.html#update_preferences"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#webapp_food.utils.update_preferences" title="Link to this definition">¶</a></dt>
+<dd><p>Updates user preferences based on like or dislike actions.</p>
+<section id="id37">
+<h3>Parameters<a class="headerlink" href="#id37" title="Link to this heading">¶</a></h3>
+<dl class="simple">
+<dt>user<span class="classifier">User</span></dt><dd><p>The user object to update preferences for.</p>
+</dd>
+<dt>recipe_index<span class="classifier">int</span></dt><dd><p>The index of the recipe to update preferences for.</p>
+</dd>
+<dt>preference_value<span class="classifier">int</span></dt><dd><p>The preference value to assign (e.g., +1 for like, -1 for dislike).</p>
+</dd>
+</dl>
+</section>
+<section id="id38">
+<h3>Example<a class="headerlink" href="#id38" title="Link to this heading">¶</a></h3>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">update_preferences</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">recipe_index</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span> <span class="n">preference_value</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="webapp_food.utils.visualize_graph">
-<span class="sig-prename descclassname"><span class="pre">webapp_food.utils.</span></span><span class="sig-name descname"><span class="pre">visualize_graph</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">graph</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/webapp_food/utils.html#visualize_graph"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#webapp_food.utils.visualize_graph" title="Link to this definition">¶</a></dt>
-<dd><p>Saves a NetworkX graph using PyVis.</p>
-<p>Parameters:
-- graph: The NetworkX graph to save.</p>
+<span class="sig-prename descclassname"><span class="pre">webapp_food.utils.</span></span><span class="sig-name descname"><span class="pre">visualize_graph</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">graph</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/webapp_food/utils.html#visualize_graph"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#webapp_food.utils.visualize_graph" title="Link to this definition">¶</a></dt>
+<dd><p>Saves a NetworkX graph as an interactive PyVis HTML visualization.</p>
+<section id="id39">
+<h3>Parameters<a class="headerlink" href="#id39" title="Link to this heading">¶</a></h3>
+<dl class="simple">
+<dt>graph<span class="classifier">networkx.Graph</span></dt><dd><p>The NetworkX graph to visualize.</p>
+</dd>
+</dl>
+</section>
+<section id="id40">
+<h3>Notes<a class="headerlink" href="#id40" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>The graph is saved as an HTML file at
+<cite>webapp_food/graphs/neighbour.html</cite>.</p></li>
+<li><p>The PyVis library is used to create an interactive graph.</p></li>
+</ul>
+</section>
+<section id="id41">
+<h3>Example<a class="headerlink" href="#id41" title="Link to this heading">¶</a></h3>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">networkx</span> <span class="k">as</span> <span class="nn">nx</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">erdos_renyi_graph</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">visualize_graph</span><span class="p">(</span><span class="n">G</span><span class="p">)</span>
+<span class="go"># The graph visualization is saved in the specified HTML file.</span>
+</pre></div>
+</div>
+</section>
 </dd></dl>
 
 </section>
@@ -791,6 +989,7 @@ the app and the user class, define errors.</p>
 <li><a class="reference internal" href="#webapp_food.user_fooder.User.get_type_of_dish"><code class="docutils literal notranslate"><span class="pre">User.get_type_of_dish</span></code></a></li>
 <li><a class="reference internal" href="#webapp_food.user_fooder.User.load_datasets"><code class="docutils literal notranslate"><span class="pre">User.load_datasets()</span></code></a></li>
 <li><a class="reference internal" href="#webapp_food.user_fooder.User.near_neighbor"><code class="docutils literal notranslate"><span class="pre">User.near_neighbor()</span></code></a></li>
+<li><a class="reference internal" href="#webapp_food.user_fooder.User.percentile_filter"><code class="docutils literal notranslate"><span class="pre">User.percentile_filter()</span></code></a></li>
 <li><a class="reference internal" href="#webapp_food.user_fooder.User.pivot_table_of_df"><code class="docutils literal notranslate"><span class="pre">User.pivot_table_of_df()</span></code></a></li>
 <li><a class="reference internal" href="#webapp_food.user_fooder.User.recipe_suggestion"><code class="docutils literal notranslate"><span class="pre">User.recipe_suggestion()</span></code></a></li>
 <li><a class="reference internal" href="#webapp_food.user_fooder.User.validity_type_of_dish"><code class="docutils literal notranslate"><span class="pre">User.validity_type_of_dish()</span></code></a></li>
