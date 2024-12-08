@@ -8,7 +8,7 @@ LIKE = 1
 DISLIKE = -1
 
 USER_COLUMNS = ['user_id', 'recipe_id', 'rate']
-RECIPE_COLUMNS = ['id', 'name', 'steps', 'description', 'ingredients']
+RECIPE_COLUMNS = ['name', 'steps', 'ingredients']
 TYPE_OF_DISH = ["main", "dessert"]
 NEIGHBOR_DATA = ["Common likes", "Common dislikes", "Recipes to recommend"]
 

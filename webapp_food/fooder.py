@@ -154,7 +154,7 @@ if st.session_state.get("user") and not GRAPH_VIZ:
     for (key, preference_value) in reversed(
             st.session_state.user.get_preferences.items()):
         if st.sidebar.button(st.session_state.raw_recipes.loc[key]
-                             [RECIPE_COLUMNS[1]] + "  \nRating: " +
+                             [RECIPE_COLUMNS[0]] + "  \nRating: " +
                              str(preference_value), key=key):
             st.session_state.last_recommended_index = key
             HISTORY = True
@@ -179,7 +179,7 @@ if RECOMMENDATION_PAGE:
              unsafe_allow_html=True)
     st.title(
         st.session_state.raw_recipes.loc[
-            st.session_state.last_recommended_index][RECIPE_COLUMNS[1]])
+            st.session_state.last_recommended_index][RECIPE_COLUMNS[0]])
     col1, col2, col3 = st.columns(
         [1, 1, 1], gap="small", vertical_alignment="center")
     col1.button("❌", key="dislike", help="Dislike", use_container_width=True)
@@ -188,7 +188,7 @@ if RECOMMENDATION_PAGE:
         images = print_image(
             st.session_state.raw_recipes.loc[
                 st.session_state.last_recommended_index]
-            [RECIPE_COLUMNS[1]], 1)[0]
+            [RECIPE_COLUMNS[0]], 1)[0]
         col2.markdown(
             f"""
             <div style="text-align: center;">
