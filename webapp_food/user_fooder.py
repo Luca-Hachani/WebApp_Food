@@ -254,7 +254,8 @@ class User:
     @staticmethod
     def percentile_filter(interactions_pivot: pd.DataFrame,
                           nb_filtered_rows_min: int=5,
-                          nb_filtered_rows_max: int=100):
+                          nb_filtered_rows_max: int=100) \
+                            -> tuple[pd.DataFrame, int]:
         """
         Filters a DataFrame of user-recipe interactions based on
         the 10th percentile of a "dist" column, with constraints on
