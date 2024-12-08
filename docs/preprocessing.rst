@@ -57,7 +57,6 @@ of representing "tastes" was wrong.
 
 .. image:: ../img/preprocessing_graphs/SVD_TSNE.png
    :alt: Visualization of the SVD and TSNE reduction
-   :width: 400px
    :align: center
 
 Method 2: Network Graphs
