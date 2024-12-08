@@ -209,6 +209,7 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Algorithm Details:</span></p>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../preprocessing.html">Explanation of Preprocessing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../algo_recipe_suggestion.html">Explanation of Recipe Suggestion</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../graph.html">Explanation of Graph Page</a></li>
 </ul>
@@ -273,27 +274,32 @@
 
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
-<span class="sd">    _type_of_dish : str</span>
+<span class="sd">    __type_of_dish : str</span>
 <span class="sd">        The preferred type of dish for the user (must be &quot;main&quot; or &quot;dessert&quot;).</span>
 
-<span class="sd">    _preferences : dict</span>
+<span class="sd">    __preferences : dict</span>
 <span class="sd">        A dictionary containing the user&#39;s preferences,</span>
 <span class="sd">        where the keys are recipe IDs and the values are the ratings given</span>
 <span class="sd">        (default: empty dictionary).</span>
 
-<span class="sd">    _interactions_main : pd.DataFrame</span>
+<span class="sd">    __interactions_main : pd.DataFrame</span>
 <span class="sd">        Dataset containing user-recipe interactions for main dishes</span>
 <span class="sd">        (dynamically loaded).</span>
 
-<span class="sd">    _interactions_dessert : pd.DataFrame</span>
+<span class="sd">    __interactions_dessert : pd.DataFrame</span>
 <span class="sd">        Dataset containing user-recipe interactions for desserts</span>
 <span class="sd">        (dynamically loaded).</span>
 
+<span class="sd">    __near_neighbor : pd.DataFrame</span>
+<span class="sd">        DataFrame containing the user IDs of nearby users.</span>
+
 <span class="sd">    Methods</span>
 <span class="sd">    -------</span>
-<span class="sd">    __post_init__() -&gt; None</span>
-<span class="sd">        Method executed after initialization to validate the dish type</span>
-<span class="sd">        and load datasets.</span>
+<span class="sd">    __init__(type_of_dish: str, test: bool = False,</span>
+<span class="sd">            df_main: pd.DataFrame = None,</span>
+<span class="sd">            df_dessert: pd.DataFrame = None) -&gt; None</span>
+<span class="sd">        Initializes a new user with a preferred type of dish and optionally</span>
+<span class="sd">        loads test datasets.</span>
 
 <span class="sd">    validity_type_of_dish(type_of_dish: str) -&gt; None</span>
 <span class="sd">        Checks if the dish type is valid (&quot;main&quot; or &quot;dessert&quot;).</span>
@@ -303,14 +309,15 @@
 <span class="sd">        Converts a DataFrame of interactions into a pivot table with user IDs</span>
 <span class="sd">        as rows and recipe IDs as columns.</span>
 
-<span class="sd">    abs_deviation(recipes_rating: np.ndarray, interactions_pivot: pd.DataFrame)</span>
-<span class="sd">    -&gt; pd.DataFrame</span>
+<span class="sd">    abs_deviation(recipes_rating: np.ndarray,</span>
+<span class="sd">    interactions_pivot: pd.DataFrame) -&gt; pd.DataFrame</span>
 <span class="sd">        Calculates the absolute deviation between recipe ratings and</span>
 <span class="sd">        existing interactions.</span>
 
-<span class="sd">    near_neighbor(self, recipes_id: list, interactions: pd.DataFrame,</span>
-<span class="sd">    interactions_pivot_input: pd.DataFrame) -&gt; pd.DataFrame</span>
-<span class="sd">        Selects close neighbor users based on their distances and interactions.</span>
+<span class="sd">    near_neighbor(recipes_id: list, interactions: pd.DataFrame,</span>
+<span class="sd">                  interactions_pivot_input: pd.DataFrame) -&gt; pd.DataFrame</span>
+<span class="sd">        Selects close neighbor users based on their distances</span>
+<span class="sd">        and interactions.</span>
 
 <span class="sd">    load_datasets() -&gt; None</span>
 <span class="sd">        Loads datasets for main dishes and desserts, if not already loaded.</span>
@@ -321,11 +328,12 @@
 <span class="sd">    get_preferences() -&gt; dict</span>
 <span class="sd">        Returns the user&#39;s preferences dictionary.</span>
 
-<span class="sd">    get_interactions_main() -&gt; pd.DataFrame</span>
-<span class="sd">        Returns the dataset of user-recipe interactions for main dishes.</span>
+<span class="sd">    get_interactions() -&gt; pd.DataFrame</span>
+<span class="sd">        Returns the dataset of user-recipe interactions for the current type</span>
+<span class="sd">        of dish.</span>
 
-<span class="sd">    get_interactions_dessert() -&gt; pd.DataFrame</span>
-<span class="sd">        Returns the dataset of user-recipe interactions for desserts.</span>
+<span class="sd">    get_near_neighbor() -&gt; pd.DataFrame</span>
+<span class="sd">        Returns the DataFrame of near neighbors.</span>
 
 <span class="sd">    recipe_suggestion() -&gt; int</span>
 <span class="sd">        Suggests a recipe based on the user&#39;s preferences and existing</span>
@@ -337,6 +345,14 @@
 <span class="sd">    del_preferences(recipe_deleted: int) -&gt; None</span>
 <span class="sd">        Removes a preference associated with a specific recipe.</span>
 
+<span class="sd">    get_graph(type: int) -&gt; nx.MultiGraph</span>
+<span class="sd">        Generates a user interaction graph based on preferences and recipes.</span>
+
+<span class="sd">    get_neighbor_data(type: int) -&gt; pd.DataFrame</span>
+<span class="sd">        Analyzes interactions between the main user and their close neighbors</span>
+<span class="sd">        to identify commonly liked recipes, commonly disliked recipes, and</span>
+<span class="sd">        recipes to recommend.</span>
+
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
 <span class="sd">    - Interactions are stored in CSV files, loaded at runtime.</span>
@@ -346,7 +362,7 @@
 <span class="sd">    Example</span>
 <span class="sd">    -------</span>
 <span class="sd">    #1 Create a user for main dishes :</span>
-<span class="sd">    user = User(_type_of_dish=&quot;main&quot;)</span>
+<span class="sd">    user = User(type_of_dish=&quot;main&quot;)</span>
 
 <span class="sd">    #2 Suggest a recipe :</span>
 <span class="sd">    suggestion = user.recipe_suggestion()</span>
@@ -354,48 +370,57 @@
 <span class="sd">    #3 Add a preference :</span>
 <span class="sd">    user.add_preferences(recipe_suggested=123, rating=+1/-1)</span>
 
-<span class="sd">    #* Remove a preference :</span>
+<span class="sd">    #4 Remove a preference :</span>
 <span class="sd">    user.del_preferences(recipe_deleted=123)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">_type_of_dish</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># Attribut protégé d&#39;instance</span>
-    <span class="c1"># Attribut protégé d&#39;instance</span>
-    <span class="n">_preferences</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
-    <span class="n">_interactions_main</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span>
-        <span class="n">init</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">repr</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># Chargé au runtime</span>
-    <span class="n">_interactions_dessert</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span>
-        <span class="n">init</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">repr</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># Chargé au runtime</span>
-    <span class="n">_near_neighbor</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span>
-        <span class="n">init</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">repr</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># Chargé au runtime</span>
+    <span class="n">__type_of_dish</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">__preferences</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
+    <span class="n">__interactions_main</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span>
+        <span class="n">init</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">repr</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">__interactions_dessert</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span>
+        <span class="n">init</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">repr</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">__near_neighbor</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span>
+        <span class="n">init</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">repr</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
-    <span class="c1"># post initialisation</span>
-<div class="viewcode-block" id="User.__post_init__">
-<a class="viewcode-back" href="../../webapp_food.html#webapp_food.user_fooder.User.__post_init__">[docs]</a>
-    <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="c1"># init</span>
+
+<div class="viewcode-block" id="User.__init__">
+<a class="viewcode-back" href="../../webapp_food.html#webapp_food.user_fooder.User.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">type_of_dish</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">test</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                 <span class="n">df_main</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">df_dessert</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>\
+            <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Executed after the class initialization.</span>
+<span class="sd">        Initializes a new user with a preferred type of dish.</span>
 
-<span class="sd">        Validates the dish type and loads interaction datasets for</span>
-<span class="sd">        main dishes and desserts.</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        type_of_dish : str</span>
+<span class="sd">            The preferred type of dish for the user (&quot;main&quot; or &quot;dessert&quot;).</span>
 
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
 <span class="sd">        ValueError</span>
-<span class="sd">            If the dish type (_type_of_dish) is invalid.</span>
+<span class="sd">            If the dish type is invalid.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-            <span class="s2">&quot;User instance created, </span><span class="se">\</span>
-<span class="s2">            checking type of dish and loading datasets&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Creating a new user for </span><span class="si">{</span><span class="n">type_of_dish</span><span class="si">}</span><span class="s2"> dishes&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__type_of_dish</span> <span class="o">=</span> <span class="n">type_of_dish</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__preferences</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="c1"># Test dish type validity</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">validity_type_of_dish</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_type_of_dish</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validity_type_of_dish</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_type_of_dish</span><span class="p">)</span>
         <span class="c1"># Load the datasets only once to avoid unnecessary overhead.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">load_datasets</span><span class="p">()</span>
-
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">test</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">load_datasets</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__interactions_main</span> <span class="o">=</span> <span class="n">df_main</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__interactions_dessert</span> <span class="o">=</span> <span class="n">df_dessert</span>
         <span class="c1"># Initialise near neighbors at None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_near_neighbor</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__near_neighbor</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span></div>
 
 
     <span class="c1"># static methods</span>
+
 <div class="viewcode-block" id="User.validity_type_of_dish">
 <a class="viewcode-back" href="../../webapp_food.html#webapp_food.user_fooder.User.validity_type_of_dish">[docs]</a>
     <span class="nd">@staticmethod</span>
@@ -456,8 +481,8 @@
     <span class="k">def</span> <span class="nf">abs_deviation</span><span class="p">(</span><span class="n">recipes_rating</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                       <span class="n">interactions_pivot</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Computes the absolute deviation between a new user&#39;s recipe preferences</span>
-<span class="sd">        and existing interactions.</span>
+<span class="sd">        Computes the absolute deviation between a new user&#39;s</span>
+<span class="sd">        recipe preferences and existing interactions.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -536,15 +561,16 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Loading datasets for main dishes and desserts&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="s2">&quot;_interactions_main&quot;</span><span class="p">)</span> <span class="ow">or</span> \
-                <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="s2">&quot;_interactions_dessert&quot;</span><span class="p">):</span>
-            <span class="bp">cls</span><span class="o">.</span><span class="n">_interactions_main</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="s2">&quot;__interactions_main&quot;</span><span class="p">)</span> <span class="ow">or</span> \
+                <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="s2">&quot;__interactions_dessert&quot;</span><span class="p">):</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">__interactions_main</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
                 <span class="n">USER_MAIN_DF</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
-            <span class="bp">cls</span><span class="o">.</span><span class="n">_interactions_dessert</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">__interactions_dessert</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
                 <span class="n">USER_DESSERT_DF</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span></div>
 
 
-    <span class="c1"># property methods</span>
+    <span class="c1"># Getters</span>
+
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">get_type_of_dish</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -556,7 +582,7 @@
 <span class="sd">            The type of dish (&quot;main&quot; or &quot;dessert&quot;).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Getting type of dish for user&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_type_of_dish</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__type_of_dish</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">get_preferences</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
@@ -569,38 +595,12 @@
 <span class="sd">            A dictionary where keys are recipe IDs and values are the ratings.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Getting preferences for user&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_preferences</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">get_interactions_main</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Returns the dataset of user-recipe interactions for main dishes.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        pd.DataFrame</span>
-<span class="sd">            The dataset of interactions for main dishes.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Getting interactions dataset for main dishes&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_interactions_main</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">get_interactions_dessert</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Returns the dataset of user-recipe interactions for desserts.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        pd.DataFrame</span>
-<span class="sd">            The dataset of interactions for desserts.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Getting interactions dataset for desserts&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_interactions_dessert</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__preferences</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">get_interactions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Retourne the dataset for the current used recipes.</span>
+<span class="sd">        Returns the dataset for the current type of dish.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">        -------</span>
@@ -609,13 +609,27 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Getting interactions dataset&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_type_of_dish</span> <span class="o">==</span> <span class="n">TYPE_OF_DISH</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
-            <span class="n">interactions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_interactions_main</span>
+            <span class="n">interactions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__interactions_main</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_type_of_dish</span> <span class="o">==</span> <span class="n">TYPE_OF_DISH</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
-            <span class="n">interactions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_interactions_dessert</span>
+            <span class="n">interactions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__interactions_dessert</span>
 
         <span class="k">return</span> <span class="n">interactions</span>
 
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">get_near_neighbor</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the DataFrame of near neighbors.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pd.DataFrame</span>
+<span class="sd">            DataFrame containing the user IDs of nearby users.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Getting near neighbors&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__near_neighbor</span>
+
     <span class="c1"># methods</span>
+
 <div class="viewcode-block" id="User.recipe_suggestion">
 <a class="viewcode-back" href="../../webapp_food.html#webapp_food.user_fooder.User.recipe_suggestion">[docs]</a>
     <span class="k">def</span> <span class="nf">recipe_suggestion</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
@@ -636,14 +650,15 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Proposing a recipe suggestion for user&quot;</span><span class="p">)</span>
         <span class="n">interactions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_interactions</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_preferences</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">preferences</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_preferences</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">preferences</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;user new historic is empty&#39;</span><span class="p">)</span>
             <span class="n">recipe_suggested</span> <span class="o">=</span> <span class="n">interactions</span><span class="p">[</span>
                 <span class="n">USER_COLUMNS</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">recipes_id</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_preferences</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+            <span class="n">recipes_id</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">preferences</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
             <span class="n">recipes_rating</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
-                <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_preferences</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+                <span class="nb">list</span><span class="p">(</span><span class="n">preferences</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
             <span class="n">interactions_reduce</span> <span class="o">=</span> <span class="n">interactions</span><span class="p">[</span>
                 <span class="n">interactions</span><span class="p">[</span><span class="n">USER_COLUMNS</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span>
                     <span class="n">recipes_id</span><span class="p">)]</span>
@@ -653,7 +668,7 @@
             <span class="n">interactions_pivot</span><span class="p">[</span><span class="s2">&quot;dist&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">interactions_abs</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
             <span class="n">interactions_selection</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">near_neighbor</span><span class="p">(</span>
                 <span class="n">recipes_id</span><span class="p">,</span> <span class="n">interactions</span><span class="p">,</span> <span class="n">interactions_pivot</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_near_neighbor</span> <span class="o">=</span> <span class="n">interactions_selection</span><span class="o">.</span><span class="n">index</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__near_neighbor</span> <span class="o">=</span> <span class="n">interactions_selection</span><span class="o">.</span><span class="n">index</span>
             <span class="k">if</span> <span class="n">interactions_selection</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
                 <span class="c1"># drop recipes already in preferences</span>
                 <span class="n">interactions_selection</span> <span class="o">=</span> <span class="n">interactions</span><span class="p">[</span>
@@ -663,8 +678,8 @@
                     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;No more recipes to suggest.&#39;</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-                        <span class="s1">&#39;No more recipes to suggest from the user preferences,</span><span class="se">\</span>
-<span class="s1">                        suggesting a random recipe&#39;</span><span class="p">)</span>
+                        <span class="s1">&#39;No more recipes to suggest from the </span><span class="se">\</span>
+<span class="s1">                        user preferences, suggesting a random recipe&#39;</span><span class="p">)</span>
                     <span class="n">recipe_suggested</span> <span class="o">=</span> \
                         <span class="n">interactions_selection</span><span class="p">[</span>
                             <span class="n">USER_COLUMNS</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -689,7 +704,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Adding a new preference for recipe </span><span class="si">{</span>
 <span class="w">                     </span><span class="n">recipe_suggested</span><span class="si">}</span><span class="s2"> with rating </span><span class="si">{</span><span class="n">rating</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_preferences</span><span class="p">[</span><span class="n">recipe_suggested</span><span class="p">]</span> <span class="o">=</span> <span class="n">rating</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__preferences</span><span class="p">[</span><span class="n">recipe_suggested</span><span class="p">]</span> <span class="o">=</span> <span class="n">rating</span></div>
 
 
 <div class="viewcode-block" id="User.del_preferences">
@@ -709,8 +724,8 @@
 <span class="sd">            If the recipe ID does not exist in the user&#39;s preferences.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Deleting preference for recipe </span><span class="si">{</span><span class="n">recipe_deleted</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">recipe_deleted</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_preferences</span><span class="p">:</span>
-            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_preferences</span><span class="p">[</span><span class="n">recipe_deleted</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">recipe_deleted</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_preferences</span><span class="p">:</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">__preferences</span><span class="p">[</span><span class="n">recipe_deleted</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Recipe ID </span><span class="si">{</span><span class="n">recipe_deleted</span><span class="si">}</span><span class="s1"> not in user preferences&#39;</span><span class="p">)</span>
             <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
@@ -722,38 +737,35 @@
 <a class="viewcode-back" href="../../webapp_food.html#webapp_food.user_fooder.User.get_graph">[docs]</a>
     <span class="k">def</span> <span class="nf">get_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">MultiGraph</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Génère un graphe d&#39;interactions utilisateur basé sur les préférences</span>
-<span class="sd">        et les recettes.</span>
+<span class="sd">        Generates a user interaction graph based on preferences and recipes.</span>
 
-<span class="sd">        Chaque nœud est un utilisateur (vous-même ou vos voisins proches)</span>
-<span class="sd">        et chaque arête représente une recette ayant la même note</span>
-<span class="sd">        entre deux utilisateurs.</span>
+<span class="sd">        Each node is a user (yourself or your close neighbors) and each edge</span>
+<span class="sd">        represents a recipe with the same rating between two users.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        type : int</span>
-<span class="sd">            - `1` : Recettes aimées.</span>
-<span class="sd">            - `-1` : Recettes non aimées.</span>
+<span class="sd">            - `1` : Liked recipes.</span>
+<span class="sd">            - `-1` : Disliked recipes.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        nx.MultiGraph</span>
-<span class="sd">            Graphe des interactions utilisateur.</span>
+<span class="sd">            User interaction graph.</span>
 
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
 <span class="sd">        NoNeighborError</span>
-<span class="sd">            Si aucun voisin n&#39;est disponible pour créer le graphe.</span>
+<span class="sd">            If no neighbors are available to create the graph.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Getting user network graph&quot;</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_near_neighbor</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+        <span class="n">near_neighbor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_near_neighbor</span>
+        <span class="k">if</span> <span class="n">near_neighbor</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;No neighbor found&quot;</span><span class="p">)</span>
             <span class="k">raise</span> <span class="n">NoNeighborError</span><span class="p">(</span><span class="s2">&quot;No neighbor found&quot;</span><span class="p">)</span>
-
         <span class="n">recipe_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">recipe_id</span> <span class="k">for</span> <span class="n">recipe_id</span><span class="p">,</span>
-                      <span class="n">rate</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_preferences</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">rate</span> <span class="o">==</span> <span class="nb">type</span><span class="p">]</span>
-        <span class="n">near_neighbor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_near_neighbor</span>
+                      <span class="n">rate</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__preferences</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">rate</span> <span class="o">==</span> <span class="nb">type</span><span class="p">]</span>
         <span class="n">interactions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_interactions</span>
         <span class="n">interactions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pivot_table_of_df</span><span class="p">(</span>
             <span class="n">interactions</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
@@ -788,7 +800,6 @@
                 <span class="k">for</span> <span class="n">recipe</span> <span class="ow">in</span> <span class="n">recipes_with_edge</span><span class="p">:</span>
                     <span class="n">graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;user </span><span class="si">{</span><span class="n">list_user</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
                                    <span class="sa">f</span><span class="s2">&quot;user </span><span class="si">{</span><span class="n">list_user</span><span class="p">[</span><span class="n">user</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">recipe</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
             <span class="n">list_user</span> <span class="o">=</span> <span class="n">list_user</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
 
         <span class="n">graph</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">relabel_nodes</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;user 0&quot;</span><span class="p">:</span> <span class="s2">&quot;you&quot;</span><span class="p">},</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -806,25 +817,25 @@
 <a class="viewcode-back" href="../../webapp_food.html#webapp_food.user_fooder.User.get_neighbor_data">[docs]</a>
     <span class="k">def</span> <span class="nf">get_neighbor_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Analyse les interactions entre l&#39;utilisateur principal et ses voisins</span>
-<span class="sd">        proches pour identifier les recettes aimées en commun, non aimées en</span>
-<span class="sd">        commun, et les recettes à recommander.</span>
+<span class="sd">        Analyzes interactions between the main user and their close neighbors</span>
+<span class="sd">        to identify commonly liked recipes, commonly disliked recipes, and</span>
+<span class="sd">        recipes to recommend.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        pd.DataFrame</span>
-<span class="sd">            DataFrame avec les colonnes :</span>
-<span class="sd">            - &quot;common_likes&quot; : Nombre de recettes aimées en commun.</span>
-<span class="sd">            - &quot;common_dislikes&quot; : Nombre de recettes non aimées en commun.</span>
-<span class="sd">            - &quot;recipes to recommend&quot; : Nombre de recettes à recommander.</span>
+<span class="sd">            DataFrame with columns:</span>
+<span class="sd">            - &quot;Common_likes&quot;: Number of commonly liked recipes.</span>
+<span class="sd">            - &quot;Common_dislikes&quot;: Number of commonly disliked recipes.</span>
+<span class="sd">            - &quot;Recipes to recommend&quot;: Number of recipes to recommend.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Getting neighbors data&quot;</span><span class="p">)</span>
 
         <span class="n">liked</span> <span class="o">=</span> <span class="p">[</span><span class="n">recipe_id</span> <span class="k">for</span> <span class="n">recipe_id</span><span class="p">,</span>
-                 <span class="n">rate</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_preferences</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">rate</span> <span class="o">==</span> <span class="n">LIKE</span><span class="p">]</span>
+                 <span class="n">rate</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_preferences</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">rate</span> <span class="o">==</span> <span class="n">LIKE</span><span class="p">]</span>
         <span class="n">disliked</span> <span class="o">=</span> <span class="p">[</span><span class="n">recipe_id</span> <span class="k">for</span> <span class="n">recipe_id</span><span class="p">,</span>
-                    <span class="n">rate</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_preferences</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">rate</span> <span class="o">==</span> <span class="n">DISLIKE</span><span class="p">]</span>
-        <span class="n">near_neighbor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_near_neighbor</span>
+                    <span class="n">rate</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_preferences</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">rate</span> <span class="o">==</span> <span class="n">DISLIKE</span><span class="p">]</span>
+        <span class="n">near_neighbor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_near_neighbor</span>
 
         <span class="n">interactions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_interactions</span>
         <span class="n">interactions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pivot_table_of_df</span><span class="p">(</span>
@@ -847,7 +858,7 @@
         <span class="p">})</span>
 
         <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span>
-            <span class="n">by</span><span class="o">=</span><span class="p">(</span><span class="n">NEIGHBOR_DATA</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">NEIGHBOR_DATA</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+            <span class="n">by</span><span class="o">=</span><span class="p">(</span><span class="n">NEIGHBOR_DATA</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="n">LIKE</span> <span class="k">else</span> <span class="n">NEIGHBOR_DATA</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
             <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">df</span></div>
