@@ -1,0 +1,66 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
+    branches:
+      - main
+      - dev
+ 
+jobs:
+  lint:
+    name: Lint code
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+          
+      - name: Install Poetry
+        run: |
+          python --version
+          pip install --upgrade pip
+          pip install poetry
+          
+      - name: Install dependencies with Poetry
+        run: |
+          poetry install --no-root
+          
+      - name: Run Flake8
+        run: |
+          poetry run flake8 .
+    continue-on-error: True
+          
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+        
+      - name: Install Poetry
+        run: |
+          python --version
+          pip install --upgrade pip
+          pip install poetry
+          
+      - name: Install dependencies with Poetry
+        run: |
+          poetry install --no-root
+
+      - name: Run tests with coverage
+        run: |
+          poetry run coverage run -m pytest -v
+          poetry run coverage report --fail-under=90

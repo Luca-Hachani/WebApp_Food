@@ -1,0 +1,30 @@
+[run]
+# Spécifie les fichiers/dossiers à analyser pour la couverture
+source = 
+    webapp_food
+# branch = True
+
+[report]
+# Affiche les lignes manquantes dans le rapport
+show_missing = True
+omit = fooder.py
+    __init__.py
+    settings.py
+
+
+# Exclut certaines lignes du calcul de couverture
+exclude_lines =
+    pragma: no cover
+    if __name__ == "__main__"
+    raise NotImplementedError
+
+# Ignore les fichiers déjà totalement couverts
+# skip_covered = True
+
+[html]
+# Répertoire de sortie pour les rapports HTML
+directory = htmlcov
+
+[xml]
+# Fichier de sortie pour les rapports XML
+output = coverage.xml
