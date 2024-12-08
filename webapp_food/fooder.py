@@ -16,7 +16,7 @@ from webapp_food.user_fooder import User
 import pandas as pd
 import logging
 from webapp_food.settings import COLORS, LIKE, DISLIKE, \
-    RECIPE_COLUMNS, RECIPE_DF
+    RECIPE_COLUMNS, RECIPE_DF, TYPE_OF_DISH
 import plotly.graph_objects as go
 
 # Page configuration
@@ -48,13 +48,13 @@ if st.session_state.get("dislike"):
     update_preferences(st.session_state.user,
                        st.session_state.last_recommended_index, DISLIKE)
 
-if st.session_state.get("main"):
+if st.session_state.get(TYPE_OF_DISH[0]):
     logging.debug("Main button clicked")
-    st.session_state.user = User('main')
+    st.session_state.user = User(TYPE_OF_DISH[0])
 
-if st.session_state.get("dessert"):
+if st.session_state.get(TYPE_OF_DISH[1]):
     logging.debug("Dessert button clicked")
-    st.session_state.user = User('dessert')
+    st.session_state.user = User(TYPE_OF_DISH[1])
 
 if st.session_state.get("graph"):
     logging.debug("Graph button clicked")
@@ -78,7 +78,7 @@ if st.session_state.get("back"):
     logging.debug("Back button clicked")
     GRAPH_VIZ = False
     if st.session_state.get("user"):
-        if st.session_state.get("user").get_type_of_dish == 'main':
+        if st.session_state.get("user").get_type_of_dish == TYPE_OF_DISH[0]:
             MAIN = True
         else:
             DESSERT = True
@@ -227,8 +227,8 @@ if RECOMMENDATION_PAGE:
 # Change of type of dish: all pages but explanation page
 if not GRAPH_VIZ:
     col1, col2 = st.columns(2)
-    col1.button("Main Dish", key="main")
-    col2.button("Dessert", key="dessert")
+    col1.button("Main Dish", key=TYPE_OF_DISH[0])
+    col2.button("Dessert", key=TYPE_OF_DISH[1])
 # Page display: graph page
 else:
     st.session_state.last_recommended_index = \
