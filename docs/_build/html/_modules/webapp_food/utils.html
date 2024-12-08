@@ -256,13 +256,20 @@
 <span class="sd">- Interacting between the app and the User class.</span>
 <span class="sd">- Defining custom exceptions for specific errors.</span>
 <span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 <span class="kn">from</span> <span class="nn">ast</span> <span class="kn">import</span> <span class="n">literal_eval</span>
 <span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">import</span> <span class="nn">requests</span>
 <span class="kn">from</span> <span class="nn">bs4</span> <span class="kn">import</span> <span class="n">BeautifulSoup</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">from</span> <span class="nn">pyvis.network</span> <span class="kn">import</span> <span class="n">Network</span>
-<span class="kn">from</span> <span class="nn">webapp_food.settings</span> <span class="kn">import</span> <span class="n">RECIPE_COLUMNS</span>
+<span class="kn">from</span> <span class="nn">webapp_food.settings</span> <span class="kn">import</span> <span class="n">RECIPE_COLUMNS</span><span class="p">,</span> <span class="n">COLORS</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">webapp_food.user_fooder</span> <span class="kn">import</span> <span class="n">User</span>
+    <span class="kn">from</span> <span class="nn">pandas</span> <span class="kn">import</span> <span class="n">DataFrame</span>
+    <span class="kn">from</span> <span class="nn">networkx</span> <span class="kn">import</span> <span class="n">Graph</span>
 
 <span class="c1"># use the requests library to search for images on Google</span>
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
@@ -322,7 +329,7 @@
 
 <div class="viewcode-block" id="print_image">
 <a class="viewcode-back" href="../../webapp_food.html#webapp_food.utils.print_image">[docs]</a>
-<span class="k">def</span> <span class="nf">print_image</span><span class="p">(</span><span class="n">search_term</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">print_image</span><span class="p">(</span><span class="n">search_term</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Searches for an image and returns a printable URL.</span>
 
@@ -371,7 +378,7 @@
 
 <div class="viewcode-block" id="update_preferences">
 <a class="viewcode-back" href="../../webapp_food.html#webapp_food.utils.update_preferences">[docs]</a>
-<span class="k">def</span> <span class="nf">update_preferences</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">recipe_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+<span class="k">def</span> <span class="nf">update_preferences</span><span class="p">(</span><span class="n">user</span><span class="p">:</span> <span class="n">User</span><span class="p">,</span> <span class="n">recipe_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                        <span class="n">preference_value</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Updates user preferences based on like or dislike actions.</span>
@@ -397,7 +404,8 @@
 
 <div class="viewcode-block" id="fetch_recipe_details">
 <a class="viewcode-back" href="../../webapp_food.html#webapp_food.utils.fetch_recipe_details">[docs]</a>
-<span class="k">def</span> <span class="nf">fetch_recipe_details</span><span class="p">(</span><span class="n">recipes_df</span><span class="p">,</span> <span class="n">recipe_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="nb">list</span><span class="p">]:</span>
+<span class="k">def</span> <span class="nf">fetch_recipe_details</span><span class="p">(</span><span class="n">recipes_df</span><span class="p">:</span> <span class="n">DataFrame</span><span class="p">,</span> <span class="n">recipe_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span>\
+        <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="nb">list</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Fetches recipe details including steps and ingredients.</span>
 
@@ -427,15 +435,15 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fetching recipe details for recipe_index=</span><span class="si">{</span><span class="n">recipe_index</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">recipe</span> <span class="o">=</span> <span class="n">recipes_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">recipe_index</span><span class="p">]</span>
-    <span class="n">steps</span> <span class="o">=</span> <span class="n">literal_eval</span><span class="p">(</span><span class="n">recipe</span><span class="p">[</span><span class="n">RECIPE_COLUMNS</span><span class="p">[</span><span class="mi">2</span><span class="p">]])</span>
-    <span class="n">ingredients</span> <span class="o">=</span> <span class="n">literal_eval</span><span class="p">(</span><span class="n">recipe</span><span class="p">[</span><span class="n">RECIPE_COLUMNS</span><span class="p">[</span><span class="mi">4</span><span class="p">]])</span>
+    <span class="n">steps</span> <span class="o">=</span> <span class="n">literal_eval</span><span class="p">(</span><span class="n">recipe</span><span class="p">[</span><span class="n">RECIPE_COLUMNS</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
+    <span class="n">ingredients</span> <span class="o">=</span> <span class="n">literal_eval</span><span class="p">(</span><span class="n">recipe</span><span class="p">[</span><span class="n">RECIPE_COLUMNS</span><span class="p">[</span><span class="mi">2</span><span class="p">]])</span>
     <span class="k">return</span> <span class="n">steps</span><span class="p">,</span> <span class="n">ingredients</span></div>
 
 
 
 <div class="viewcode-block" id="visualize_graph">
 <a class="viewcode-back" href="../../webapp_food.html#webapp_food.utils.visualize_graph">[docs]</a>
-<span class="k">def</span> <span class="nf">visualize_graph</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">visualize_graph</span><span class="p">(</span><span class="n">graph</span><span class="p">:</span> <span class="n">Graph</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Saves a NetworkX graph as an interactive PyVis HTML visualization.</span>
 
@@ -446,7 +454,7 @@
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
-<span class="sd">    - The graph is saved as an HTML file at </span>
+<span class="sd">    - The graph is saved as an HTML file at</span>
 <span class="sd">      `webapp_food/graphs/neighbour.html`.</span>
 <span class="sd">    - The PyVis library is used to create an interactive graph.</span>
 
@@ -468,6 +476,12 @@
     <span class="c1"># Create a PyVis Network object</span>
     <span class="n">net</span> <span class="o">=</span> <span class="n">Network</span><span class="p">(</span><span class="n">notebook</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="s2">&quot;100%&quot;</span><span class="p">,</span>
                   <span class="n">height</span><span class="o">=</span><span class="s2">&quot;300px&quot;</span><span class="p">,</span> <span class="n">cdn_resources</span><span class="o">=</span><span class="s1">&#39;remote&#39;</span><span class="p">)</span>
+    <span class="c1"># Changing the node color</span>
+    <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">:</span>
+        <span class="n">net</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">COLORS</span><span class="p">[</span><span class="s1">&#39;first_color&#39;</span><span class="p">],</span> <span class="n">size</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+    <span class="c1"># Changing the edge color</span>
+    <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">edges</span><span class="p">:</span>
+        <span class="n">net</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">edge</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">edge</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="n">COLORS</span><span class="p">[</span><span class="s1">&#39;second_color&#39;</span><span class="p">])</span>
 
     <span class="c1"># Convert NetworkX graph to PyVis</span>
     <span class="n">net</span><span class="o">.</span><span class="n">from_nx</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
