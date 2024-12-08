@@ -2,6 +2,7 @@
 Module containing the User class for recipe recommendations.
 """
 # Importation des librairies
+from __future__ import annotations
 from dataclasses import dataclass, field
 from webapp_food.utils import NoNeighborError
 import numpy as np
@@ -305,6 +306,7 @@ class User:
         >>> print(nb_rows)
         2
         """
+        logger.debug("Applying percentile filter to interactions")
         percentile_10 = interactions_pivot['dist'].quantile(0.1)
         filter_percentile_10 = interactions_pivot['dist'] <= percentile_10
         nb_filtered_rows = (filter_percentile_10).sum()
