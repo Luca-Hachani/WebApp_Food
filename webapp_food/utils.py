@@ -138,7 +138,7 @@ def update_preferences(user: User, recipe_index: int,
     user.add_preferences(recipe_index, preference_value)
 
 
-def fetch_recipe_details(recipes_df: Dataframe, recipe_index: int)\
+def fetch_recipe_details(recipes_df: DataFrame, recipe_index: int)\
         -> tuple[list, list]:
     """
     Fetches recipe details including steps and ingredients.
