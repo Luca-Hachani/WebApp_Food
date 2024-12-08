@@ -70,8 +70,8 @@ def fetch_recipe_details(recipes_df, recipe_index):
     """Fetch recipe details (steps and ingredients)."""
     logger.debug(f"Fetching recipe details for recipe_index={recipe_index}")
     recipe = recipes_df.loc[recipe_index]
-    steps = literal_eval(recipe[RECIPE_COLUMNS[2]])
-    ingredients = literal_eval(recipe[RECIPE_COLUMNS[4]])
+    steps = literal_eval(recipe[RECIPE_COLUMNS[1]])
+    ingredients = literal_eval(recipe[RECIPE_COLUMNS[2]])
     return steps, ingredients
 
 

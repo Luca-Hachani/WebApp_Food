@@ -10,7 +10,7 @@
 ---
 
 <h3 align="center">
-    🍕 Try it out here: <a href="https://webappfoodgit-dpbqi4cqyhu79zzq5gqphy.streamlit.app/"> Fooder on streamlit 🍰 </a>
+    🍕 Try it out here: <a href="https://fooder.streamlit.app/"> Fooder on streamlit 🍰 </a>
 </h3>
 
 ---
