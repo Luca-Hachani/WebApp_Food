@@ -16,7 +16,7 @@
 ---
 
 <table>
-    <tr><td><img src="./app_example/main_page.png"></td><td><img src="./app_example/graph.png"></td></tr>
+    <tr><td><img src="./img/app_example/main_page.png"></td><td><img src="./img/app_example/graph.png"></td></tr>
 </table>
 
 ## Idea behind the application
