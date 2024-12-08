@@ -10,13 +10,13 @@
 ---
 
 <h3 align="center">
-    🍕 Try it out here: <a href="https://webappfoodgit-dpbqi4cqyhu79zzq5gqphy.streamlit.app/"> Fooder on streamlit 🍰 </a>
+    🍕 Try it out here: <a href="https://fooder.streamlit.app/"> Fooder on streamlit 🍰 </a>
 </h3>
 
 ---
 
 <table>
-    <tr><td><img src="./app_example/main_page.png"></td><td><img src="./app_example/graph.png"></td></tr>
+    <tr><td><img src="./img/app_example/main_page.png"></td><td><img src="./img/app_example/graph.png"></td></tr>
 </table>
 
 ## Idea behind the application

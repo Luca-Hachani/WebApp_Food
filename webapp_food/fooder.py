@@ -1,8 +1,14 @@
-""" Main file of the web application.
-It allows the user to choose between a main dish or a dessert,
-to like or dislike the recipes proposed and
-to see the graph of adjency for the current user.
-The user can also see the recommended recipes and their details."""
+"""
+Main file of the web application.
+
+This module manages the main functionality of the Fooder web application,
+including:
+- Choosing between main dishes and desserts.
+- Liking or disliking recommended recipes.
+- Viewing the graph of adjency for the current user.
+- Displaying recommended recipes and their details.
+"""
+
 import streamlit as st
 from webapp_food.utils import update_preferences, print_image, \
     ImageError, fetch_recipe_details, visualize_graph, NoNeighborError
@@ -10,7 +16,7 @@ from webapp_food.user_fooder import User
 import pandas as pd
 import logging
 from webapp_food.settings import COLORS, LIKE, DISLIKE, \
-    RECIPE_COLUMNS, RECIPE_DF
+    RECIPE_COLUMNS, RECIPE_DF, TYPE_OF_DISH
 import plotly.graph_objects as go
 
 # Page configuration
@@ -42,13 +48,13 @@ if st.session_state.get("dislike"):
     update_preferences(st.session_state.user,
                        st.session_state.last_recommended_index, DISLIKE)
 
-if st.session_state.get("main"):
+if st.session_state.get(TYPE_OF_DISH[0]):
     logging.debug("Main button clicked")
-    st.session_state.user = User('main')
+    st.session_state.user = User(TYPE_OF_DISH[0])
 
-if st.session_state.get("dessert"):
+if st.session_state.get(TYPE_OF_DISH[1]):
     logging.debug("Dessert button clicked")
-    st.session_state.user = User('dessert')
+    st.session_state.user = User(TYPE_OF_DISH[1])
 
 if st.session_state.get("graph"):
     logging.debug("Graph button clicked")
@@ -72,7 +78,7 @@ if st.session_state.get("back"):
     logging.debug("Back button clicked")
     GRAPH_VIZ = False
     if st.session_state.get("user"):
-        if st.session_state.get("user").get_type_of_dish == 'main':
+        if st.session_state.get("user").get_type_of_dish == TYPE_OF_DISH[0]:
             MAIN = True
         else:
             DESSERT = True
@@ -154,7 +160,7 @@ if st.session_state.get("user") and not GRAPH_VIZ:
     for (key, preference_value) in reversed(
             st.session_state.user.get_preferences.items()):
         if st.sidebar.button(st.session_state.raw_recipes.loc[key]
-                             [RECIPE_COLUMNS[1]] + "  \nRating: " +
+                             [RECIPE_COLUMNS[0]] + "  \nRating: " +
                              str(preference_value), key=key):
             st.session_state.last_recommended_index = key
             HISTORY = True
@@ -179,7 +185,7 @@ if RECOMMENDATION_PAGE:
              unsafe_allow_html=True)
     st.title(
         st.session_state.raw_recipes.loc[
-            st.session_state.last_recommended_index][RECIPE_COLUMNS[1]])
+            st.session_state.last_recommended_index][RECIPE_COLUMNS[0]])
     col1, col2, col3 = st.columns(
         [1, 1, 1], gap="small", vertical_alignment="center")
     col1.button("❌", key="dislike", help="Dislike", use_container_width=True)
@@ -188,7 +194,7 @@ if RECOMMENDATION_PAGE:
         images = print_image(
             st.session_state.raw_recipes.loc[
                 st.session_state.last_recommended_index]
-            [RECIPE_COLUMNS[1]], 1)[0]
+            [RECIPE_COLUMNS[0]], 1)[0]
         col2.markdown(
             f"""
             <div style="text-align: center;">
@@ -221,8 +227,8 @@ if RECOMMENDATION_PAGE:
 # Change of type of dish: all pages but explanation page
 if not GRAPH_VIZ:
     col1, col2 = st.columns(2)
-    col1.button("Main Dish", key="main")
-    col2.button("Dessert", key="dessert")
+    col1.button("Main Dish", key=TYPE_OF_DISH[0])
+    col2.button("Dessert", key=TYPE_OF_DISH[1])
 # Page display: graph page
 else:
     st.session_state.last_recommended_index = \

@@ -178,7 +178,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
@@ -247,7 +247,7 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <div class="visually-hidden">Toggle table of contents sidebar</div>
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
@@ -255,6 +255,91 @@
         <article role="main" id="furo-main-content">
           <section id="explanation-of-preprocessing">
 <h1>Explanation of Preprocessing<a class="headerlink" href="#explanation-of-preprocessing" title="Link to this heading">¶</a></h1>
+<section id="preprocessing-steps">
+<h2>Preprocessing Steps<a class="headerlink" href="#preprocessing-steps" title="Link to this heading">¶</a></h2>
+<p>Our first step was to distinguish main dishes from desserts, based on the assumption
+that tastes differ between these two categories. To achieve this, we identified
+which recipes were main dishes and which were desserts by examining the most
+commonly used tags:</p>
+<ul class="simple">
+<li><p><strong>Main dishes:</strong> <em>main-dish</em>, <em>meat</em>, <em>vegetables</em>, <em>seafood</em></p></li>
+<li><p><strong>Desserts:</strong> <em>desserts</em>, <em>cookies-and-brownies</em>, <em>chocolate</em></p></li>
+</ul>
+<p>Each recipe associated with these tags was assigned a type (main dish or dessert)
+to separate them.</p>
+</section>
+<section id="binarizing-user-ratings">
+<h2>Binarizing User Ratings<a class="headerlink" href="#binarizing-user-ratings" title="Link to this heading">¶</a></h2>
+<p>Our second decision was to binarize all user ratings to distinguish liked recipes
+(rating of 1) from disliked recipes (rating of -1). To do this for each user
+individually, we:</p>
+<ol class="arabic simple">
+<li><p>Grouped all ratings for each user.</p></li>
+<li><p>Applied a K-means clustering algorithm to separate ratings into two clusters:
+“like” and “dislike.”</p></li>
+</ol>
+</section>
+<section id="matrices-for-main-dishes-and-desserts">
+<h2>Matrices for Main Dishes and Desserts<a class="headerlink" href="#matrices-for-main-dishes-and-desserts" title="Link to this heading">¶</a></h2>
+<p>To further refine preprocessing, we created two matrices—one for main dishes and
+one for desserts. In these matrices:</p>
+<ul class="simple">
+<li><p>Rows represent user IDs.</p></li>
+<li><p>Columns represent recipe IDs.</p></li>
+<li><p>Values are 1 for likes, -1 for dislikes, and 0 if the user did not rate the recipe.</p></li>
+</ul>
+</section>
+<section id="visualizing-user-preferences">
+<h2>Visualizing User Preferences<a class="headerlink" href="#visualizing-user-preferences" title="Link to this heading">¶</a></h2>
+<p>We attempted to visualize user preferences using two different methods.</p>
+<section id="method-1-svd-and-tsne">
+<h3>Method 1: SVD and TSNE<a class="headerlink" href="#method-1-svd-and-tsne" title="Link to this heading">¶</a></h3>
+<ol class="arabic simple">
+<li><p>Applied SVD (Singular Value Decomposition) to reduce the dimensionality of our
+matrices to 5 components, intended to represent fundamental tastes (sweet, salty,
+bitter, sour, umami).</p></li>
+<li><p>Reduced the dimension from 5 to 2 using TSNE, enabling plotting of the results.</p></li>
+</ol>
+<p>While this approach produced an interesting visualization, verification revealed
+that users who were suppose to be close, were not close on the graph. Since, the
+SVD produces coefficients that were difficult to interpret, our initial assumption
+of representing “tastes” was wrong.</p>
+<img alt="Visualization of the SVD and TSNE reduction" class="align-center" src="_images/SVD_TSNE.png" />
+</section>
+<section id="method-2-network-graphs">
+<h3>Method 2: Network Graphs<a class="headerlink" href="#method-2-network-graphs" title="Link to this heading">¶</a></h3>
+<p>We constructed network graphs where each user is represented by a node, and
+an edge is drawn between two users if they both liked the same recipe. The first
+graph highlighted some isolated users who only liked unique recipes that no one
+else rated. These users and their unique recipes provided no useful insight for the
+recommendation algorithm.</p>
+<img alt="Visualization of the network graph" class="align-center" src="_images/network1.png" />
+<p>To address this, we applied the following criteria:</p>
+<ul class="simple">
+<li><p>Each user must have at least two ratings, including at least one like.</p></li>
+<li><p>Each recipe must have at least one rating.</p></li>
+</ul>
+<p>Although recipes with a single rating do not influence the user-user distance
+calculations, they remain recommendable.</p>
+<p>After applying these rules, we observed a large number of interconnections among
+users (edges shown in green). However, the global graph remained unreadable.
+To improve readability, we chose to display subgraphs from random samples of users,
+incorporating both likes and dislikes.</p>
+<img alt="Visualization of the network graph with dropped isolated users" class="align-center" src="_images/network2.png" />
+<img alt="Visualization of sub network graph of user 2282846" class="align-center" src="_images/network3.png" />
+<img alt="Visualization of sub network graph of user 581992" class="align-center" src="_images/network4.png" />
+</section>
+</section>
+<section id="refining-the-visualization">
+<h2>Refining the Visualization<a class="headerlink" href="#refining-the-visualization" title="Link to this heading">¶</a></h2>
+<p>Even with subgraphs, the network remained sometimes difficult to interpret. To
+address this, we decided to:</p>
+<ol class="arabic simple">
+<li><p>Split the graph into two separate graphs (one for likes and one for dislikes).</p></li>
+<li><p>Display only the <em>k</em> nearest neighbors of a given user in the application.</p></li>
+</ol>
+<p>This approach resulted in clearer, more meaningful visualizations for the end user.</p>
+</section>
 </section>
 
         </article>
@@ -300,8 +385,35 @@
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Explanation of Preprocessing</a><ul>
+<li><a class="reference internal" href="#preprocessing-steps">Preprocessing Steps</a></li>
+<li><a class="reference internal" href="#binarizing-user-ratings">Binarizing User Ratings</a></li>
+<li><a class="reference internal" href="#matrices-for-main-dishes-and-desserts">Matrices for Main Dishes and Desserts</a></li>
+<li><a class="reference internal" href="#visualizing-user-preferences">Visualizing User Preferences</a><ul>
+<li><a class="reference internal" href="#method-1-svd-and-tsne">Method 1: SVD and TSNE</a></li>
+<li><a class="reference internal" href="#method-2-network-graphs">Method 2: Network Graphs</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#refining-the-visualization">Refining the Visualization</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>

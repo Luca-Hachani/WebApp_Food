@@ -2,6 +2,7 @@
 Module containing the User class for recipe recommendations.
 """
 # Importation des librairies
+from __future__ import annotations
 from dataclasses import dataclass, field
 from webapp_food.utils import NoNeighborError
 import numpy as np
@@ -63,10 +64,12 @@ class User:
         Calculates the absolute deviation between recipe ratings and
         existing interactions.
 
-    near_neighbor(recipes_id: list, interactions: pd.DataFrame,
-                  interactions_pivot_input: pd.DataFrame) -> pd.DataFrame
-        Selects close neighbor users based on their distances
-        and interactions.
+    def percentile_filter(interactions_pivot: pd.DataFrame,
+                          nb_filtered_rows_min: int=5,
+                          nb_filtered_rows_max: int=100):
+        Filters a DataFrame of user-recipe interactions based on
+        the 10th percentile of a "dist" column, with constraints on
+        the minimum and maximum number of rows.
 
     load_datasets() -> None
         Loads datasets for main dishes and desserts, if not already loaded.
@@ -83,6 +86,12 @@ class User:
 
     get_near_neighbor() -> pd.DataFrame
         Returns the DataFrame of near neighbors.
+
+    near_neighbor(recipes_id: list, recipes_rating: np.ndarray,
+                  interactions: pd.DataFrame,
+                  interactions_pivot_input: pd.DataFrame) -> pd.DataFrame
+    Selects close neighbor users based on their distances
+    and interactions.
 
     recipe_suggestion() -> int
         Suggests a recipe based on the user's preferences and existing
@@ -244,42 +253,73 @@ class User:
         return interactions_abs
 
     @staticmethod
-    def near_neighbor(recipes_id: list, interactions: pd.DataFrame,
-                      interactions_pivot_input: pd.DataFrame) -> pd.DataFrame:
+    def percentile_filter(interactions_pivot: pd.DataFrame,
+                          nb_filtered_rows_min: int = 5,
+                          nb_filtered_rows_max: int = 10
+                          ) -> tuple[pd.DataFrame, int]:
         """
-        Selects nearby users based on distances and their interactions.
+        Filters a DataFrame of user-recipe interactions based on
+        the 10th percentile of a "dist" column, with constraints on
+        the minimum and maximum number of rows.
+
+        The function applies a filter to retain rows where
+        the "dist" value is less than or equal to the 10th percentile of
+        the "dist" column. It ensures that the resulting filtered DataFrame
+        has at least `nb_filtered_rows_min` rows and
+        at most `nb_filtered_rows_max` rows.
 
         Parameters
         ----------
-        recipes_id : list
-            List of recipe IDs already reviewed by the new user.
-        interactions : pd.DataFrame
-            DataFrame containing user-recipe interactions.
-        interactions_pivot_input : pd.DataFrame
-            Pivot table containing user distances and recipe interactions.
+        interactions_pivot : pd.DataFrame
+            The input pivot table containing a "dist" column used for
+            filtering.
+        nb_filtered_rows_min : int, optional
+            The minimum number of rows to retain in the filtered DataFrame,
+            by default 5.
+        nb_filtered_rows_max : int, optional
+            The maximum number of rows to retain in the filtered DataFrame,
+            by default 100.
 
         Returns
         -------
-        pd.DataFrame
-            Filtered interactions from nearby users for recipes not reviewed
-            by the new user.
+        tuple
+            A tuple containing:
+            - pd.DataFrame: The filtered pivot table.
+            - int: The number of rows in the filtered DataFrame.
+
+        Notes
+        -----
+        - If the number of rows after filtering by the 10th percentile is less
+        than `nb_filtered_rows_min`, no filtering is applied.
+        - If the filtered rows exceed `nb_filtered_rows_max`,
+        additional filtering is applied to meet the maximum constraint.
+
+        Example
+        -------
+        >>> import pandas as pd
+        >>> interactions_pivot["dist"] = [1, 2, 5, 3, 1, 8, 5, 4, 9]
+        >>> filtered_df, nb_rows = percentile_filter(interactions_pivot, 2, 4)
+        >>> print(filtered_df)
+            dist
+        0    1
+        4    1
+        >>> print(nb_rows)
+        2
         """
-        logger.debug(
-            "Selecting near neighbors based on distance and interactions")
-        user_prox_id = interactions_pivot_input.sort_values(
-            "dist").head(5).index
-        interactions_prox = interactions[interactions[USER_COLUMNS[0]].isin(
-            user_prox_id)]
-        interactions_prox = interactions_prox[
-            ~interactions_prox[USER_COLUMNS[1]].isin(recipes_id)]
-        interactions_pivot_output = User.pivot_table_of_df(interactions_prox)
-        interactions_pivot_output = interactions_pivot_output.reindex(
-            user_prox_id)
-        user_prox_id = np.unique(interactions_prox[USER_COLUMNS[0]])
-        interactions_selection = interactions_pivot_output.loc[user_prox_id]
-        return interactions_selection
+        logger.debug("Applying percentile filter to interactions")
+        percentile_10 = interactions_pivot['dist'].quantile(0.1)
+        filter_percentile_10 = interactions_pivot['dist'] <= percentile_10
+        nb_filtered_rows = (filter_percentile_10).sum()
+        if nb_filtered_rows < nb_filtered_rows_min:
+            nb_filtered_rows = nb_filtered_rows_min
+        elif nb_filtered_rows > nb_filtered_rows_max:
+            nb_filtered_rows = nb_filtered_rows_max
+        else:
+            interactions_pivot = interactions_pivot[filter_percentile_10]
+        return interactions_pivot, nb_filtered_rows
 
     # class methods
+
     @classmethod
     def load_datasets(cls) -> None:
         """
@@ -361,6 +401,52 @@ class User:
 
     # methods
 
+    def near_neighbor(self, recipes_id: list, recipes_rating: np.ndarray,
+                      interactions: pd.DataFrame,
+                      interactions_pivot_input: pd.DataFrame) -> pd.DataFrame:
+        """
+        Selects nearby users based on distances and their interactions.
+
+        Parameters
+        ----------
+        recipes_id : list
+            List of recipe IDs already reviewed by the new user.
+        recipes_rating : np.ndarray
+            Preferences assigned to recipes by the new user (1D array).
+        interactions : pd.DataFrame
+            DataFrame containing user-recipe interactions.
+        interactions_pivot_input : pd.DataFrame
+            Pivot table containing user distances and recipe interactions.
+
+        Returns
+        -------
+        pd.DataFrame
+            Filtered interactions from nearby users for recipes not reviewed
+            by the new user.
+        """
+        logger.debug(
+            "Selecting near neighbors based on distance and interactions")
+        interactions_abs = self.abs_deviation(recipes_rating,
+                                              interactions_pivot_input)
+        interactions_pivot_input["dist"] = interactions_abs.sum(axis=1)
+        interactions_pivot_input = interactions_pivot_input[
+            ~np.array(np.all(interactions_abs == 2, axis=1))]
+        interactions_pivot_input, nb_filtered_rows = self.percentile_filter(
+            interactions_pivot_input)
+        user_prox_id = interactions_pivot_input.sort_values(
+            "dist").head(nb_filtered_rows).index
+        # sys.exit('flag')
+        interactions_prox = interactions[interactions[USER_COLUMNS[0]].isin(
+            user_prox_id)]
+        interactions_prox = interactions_prox[
+            ~interactions_prox[USER_COLUMNS[1]].isin(recipes_id)]
+        interactions_pivot_output = User.pivot_table_of_df(interactions_prox)
+        interactions_pivot_output = interactions_pivot_output.reindex(
+            user_prox_id)
+        user_prox_id = np.unique(interactions_prox[USER_COLUMNS[0]])
+        interactions_selection = interactions_pivot_output.loc[user_prox_id]
+        return interactions_selection
+
     def recipe_suggestion(self) -> int:
         """
         Suggests a recipe based on the new user's preferences and
@@ -392,11 +478,10 @@ class User:
                 interactions[USER_COLUMNS[1]].isin(
                     recipes_id)]
             interactions_pivot = self.pivot_table_of_df(interactions_reduce)
-            interactions_abs = self.abs_deviation(
-                recipes_rating, interactions_pivot)
-            interactions_pivot["dist"] = interactions_abs.sum(axis=1)
-            interactions_selection = self.near_neighbor(
-                recipes_id, interactions, interactions_pivot)
+            interactions_selection = self.near_neighbor(recipes_id,
+                                                        recipes_rating,
+                                                        interactions,
+                                                        interactions_pivot)
             self.__near_neighbor = interactions_selection.index
             if interactions_selection.empty:
                 # drop recipes already in preferences
