@@ -314,10 +314,12 @@
 <span class="sd">        Calculates the absolute deviation between recipe ratings and</span>
 <span class="sd">        existing interactions.</span>
 
-<span class="sd">    near_neighbor(recipes_id: list, interactions: pd.DataFrame,</span>
-<span class="sd">                  interactions_pivot_input: pd.DataFrame) -&gt; pd.DataFrame</span>
-<span class="sd">        Selects close neighbor users based on their distances</span>
-<span class="sd">        and interactions.</span>
+<span class="sd">    def percentile_filter(interactions_pivot: pd.DataFrame,</span>
+<span class="sd">                          nb_filtered_rows_min: int=5,</span>
+<span class="sd">                          nb_filtered_rows_max: int=100):</span>
+<span class="sd">        Filters a DataFrame of user-recipe interactions based on</span>
+<span class="sd">        the 10th percentile of a &quot;dist&quot; column, with constraints on</span>
+<span class="sd">        the minimum and maximum number of rows.</span>
 
 <span class="sd">    load_datasets() -&gt; None</span>
 <span class="sd">        Loads datasets for main dishes and desserts, if not already loaded.</span>
@@ -334,6 +336,12 @@
 
 <span class="sd">    get_near_neighbor() -&gt; pd.DataFrame</span>
 <span class="sd">        Returns the DataFrame of near neighbors.</span>
+
+<span class="sd">    near_neighbor(recipes_id: list, recipes_rating: np.ndarray,</span>
+<span class="sd">                  interactions: pd.DataFrame,</span>
+<span class="sd">                  interactions_pivot_input: pd.DataFrame) -&gt; pd.DataFrame</span>
+<span class="sd">    Selects close neighbor users based on their distances</span>
+<span class="sd">    and interactions.</span>
 
 <span class="sd">    recipe_suggestion() -&gt; int</span>
 <span class="sd">        Suggests a recipe based on the user&#39;s preferences and existing</span>
@@ -506,46 +514,75 @@
         <span class="k">return</span> <span class="n">interactions_abs</span></div>
 
 
-<div class="viewcode-block" id="User.near_neighbor">
-<a class="viewcode-back" href="../../webapp_food.html#webapp_food.user_fooder.User.near_neighbor">[docs]</a>
+<div class="viewcode-block" id="User.percentile_filter">
+<a class="viewcode-back" href="../../webapp_food.html#webapp_food.user_fooder.User.percentile_filter">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">near_neighbor</span><span class="p">(</span><span class="n">recipes_id</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">interactions</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
-                      <span class="n">interactions_pivot_input</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">percentile_filter</span><span class="p">(</span><span class="n">interactions_pivot</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+                          <span class="n">nb_filtered_rows_min</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+                          <span class="n">nb_filtered_rows_max</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Selects nearby users based on distances and their interactions.</span>
+<span class="sd">        Filters a DataFrame of user-recipe interactions based on</span>
+<span class="sd">        the 10th percentile of a &quot;dist&quot; column, with constraints on</span>
+<span class="sd">        the minimum and maximum number of rows.</span>
+
+<span class="sd">        The function applies a filter to retain rows where</span>
+<span class="sd">        the &quot;dist&quot; value is less than or equal to the 10th percentile of</span>
+<span class="sd">        the &quot;dist&quot; column. It ensures that the resulting filtered DataFrame</span>
+<span class="sd">        has at least `nb_filtered_rows_min` rows and</span>
+<span class="sd">        at most `nb_filtered_rows_max` rows.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        recipes_id : list</span>
-<span class="sd">            List of recipe IDs already reviewed by the new user.</span>
-<span class="sd">        interactions : pd.DataFrame</span>
-<span class="sd">            DataFrame containing user-recipe interactions.</span>
-<span class="sd">        interactions_pivot_input : pd.DataFrame</span>
-<span class="sd">            Pivot table containing user distances and recipe interactions.</span>
+<span class="sd">        interactions_pivot : pd.DataFrame</span>
+<span class="sd">            The input pivot table containing a &quot;dist&quot; column used for</span>
+<span class="sd">            filtering.</span>
+<span class="sd">        nb_filtered_rows_min : int, optional</span>
+<span class="sd">            The minimum number of rows to retain in the filtered DataFrame,</span>
+<span class="sd">            by default 5.</span>
+<span class="sd">        nb_filtered_rows_max : int, optional</span>
+<span class="sd">            The maximum number of rows to retain in the filtered DataFrame,</span>
+<span class="sd">            by default 100.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        pd.DataFrame</span>
-<span class="sd">            Filtered interactions from nearby users for recipes not reviewed</span>
-<span class="sd">            by the new user.</span>
+<span class="sd">        tuple</span>
+<span class="sd">            A tuple containing:</span>
+<span class="sd">            - pd.DataFrame: The filtered pivot table.</span>
+<span class="sd">            - int: The number of rows in the filtered DataFrame.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        - If the number of rows after filtering by the 10th percentile is less</span>
+<span class="sd">        than `nb_filtered_rows_min`, no filtering is applied.</span>
+<span class="sd">        - If the filtered rows exceed `nb_filtered_rows_max`,</span>
+<span class="sd">        additional filtering is applied to meet the maximum constraint.</span>
+
+<span class="sd">        Example</span>
+<span class="sd">        -------</span>
+<span class="sd">        &gt;&gt;&gt; import pandas as pd</span>
+<span class="sd">        &gt;&gt;&gt; interactions_pivot[&quot;dist&quot;] = [1, 2, 5, 3, 1, 8, 5, 4, 9]</span>
+<span class="sd">        &gt;&gt;&gt; filtered_df, nb_rows = percentile_filter(interactions_pivot, 2, 4)</span>
+<span class="sd">        &gt;&gt;&gt; print(filtered_df)</span>
+<span class="sd">            dist</span>
+<span class="sd">        0    1</span>
+<span class="sd">        4    1</span>
+<span class="sd">        &gt;&gt;&gt; print(nb_rows)</span>
+<span class="sd">        2</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-            <span class="s2">&quot;Selecting near neighbors based on distance and interactions&quot;</span><span class="p">)</span>
-        <span class="n">user_prox_id</span> <span class="o">=</span> <span class="n">interactions_pivot_input</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span>
-            <span class="s2">&quot;dist&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">index</span>
-        <span class="n">interactions_prox</span> <span class="o">=</span> <span class="n">interactions</span><span class="p">[</span><span class="n">interactions</span><span class="p">[</span><span class="n">USER_COLUMNS</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span>
-            <span class="n">user_prox_id</span><span class="p">)]</span>
-        <span class="n">interactions_prox</span> <span class="o">=</span> <span class="n">interactions_prox</span><span class="p">[</span>
-            <span class="o">~</span><span class="n">interactions_prox</span><span class="p">[</span><span class="n">USER_COLUMNS</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">recipes_id</span><span class="p">)]</span>
-        <span class="n">interactions_pivot_output</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">pivot_table_of_df</span><span class="p">(</span><span class="n">interactions_prox</span><span class="p">)</span>
-        <span class="n">interactions_pivot_output</span> <span class="o">=</span> <span class="n">interactions_pivot_output</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span>
-            <span class="n">user_prox_id</span><span class="p">)</span>
-        <span class="n">user_prox_id</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">interactions_prox</span><span class="p">[</span><span class="n">USER_COLUMNS</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
-        <span class="n">interactions_selection</span> <span class="o">=</span> <span class="n">interactions_pivot_output</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">user_prox_id</span><span class="p">]</span>
-        <span class="k">return</span> <span class="n">interactions_selection</span></div>
+        <span class="n">percentile_10</span> <span class="o">=</span> <span class="n">interactions_pivot</span><span class="p">[</span><span class="s1">&#39;dist&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+        <span class="n">filter_percentile_10</span> <span class="o">=</span> <span class="n">interactions_pivot</span><span class="p">[</span><span class="s1">&#39;dist&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">percentile_10</span>
+        <span class="n">nb_filtered_rows</span> <span class="o">=</span> <span class="p">(</span><span class="n">filter_percentile_10</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">nb_filtered_rows</span> <span class="o">&lt;</span> <span class="n">nb_filtered_rows_min</span><span class="p">:</span>
+            <span class="n">nb_filtered_rows</span> <span class="o">=</span> <span class="n">nb_filtered_rows_min</span>
+        <span class="k">elif</span> <span class="n">nb_filtered_rows</span> <span class="o">&gt;</span> <span class="n">nb_filtered_rows_max</span><span class="p">:</span>
+            <span class="n">nb_filtered_rows</span> <span class="o">=</span> <span class="n">nb_filtered_rows_max</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">interactions_pivot</span> <span class="o">=</span> <span class="n">interactions_pivot</span><span class="p">[</span><span class="n">filter_percentile_10</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">interactions_pivot</span><span class="p">,</span> <span class="n">nb_filtered_rows</span></div>
 
 
     <span class="c1"># class methods</span>
+
 <div class="viewcode-block" id="User.load_datasets">
 <a class="viewcode-back" href="../../webapp_food.html#webapp_food.user_fooder.User.load_datasets">[docs]</a>
     <span class="nd">@classmethod</span>
@@ -630,6 +667,55 @@
 
     <span class="c1"># methods</span>
 
+<div class="viewcode-block" id="User.near_neighbor">
+<a class="viewcode-back" href="../../webapp_food.html#webapp_food.user_fooder.User.near_neighbor">[docs]</a>
+    <span class="k">def</span> <span class="nf">near_neighbor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">recipes_id</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">recipes_rating</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                      <span class="n">interactions</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+                      <span class="n">interactions_pivot_input</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Selects nearby users based on distances and their interactions.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        recipes_id : list</span>
+<span class="sd">            List of recipe IDs already reviewed by the new user.</span>
+<span class="sd">        recipes_rating : np.ndarray</span>
+<span class="sd">            Preferences assigned to recipes by the new user (1D array).</span>
+<span class="sd">        interactions : pd.DataFrame</span>
+<span class="sd">            DataFrame containing user-recipe interactions.</span>
+<span class="sd">        interactions_pivot_input : pd.DataFrame</span>
+<span class="sd">            Pivot table containing user distances and recipe interactions.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pd.DataFrame</span>
+<span class="sd">            Filtered interactions from nearby users for recipes not reviewed</span>
+<span class="sd">            by the new user.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+            <span class="s2">&quot;Selecting near neighbors based on distance and interactions&quot;</span><span class="p">)</span>
+        <span class="n">interactions_abs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">abs_deviation</span><span class="p">(</span><span class="n">recipes_rating</span><span class="p">,</span>
+                                              <span class="n">interactions_pivot_input</span><span class="p">)</span>
+        <span class="n">interactions_pivot_input</span><span class="p">[</span><span class="s2">&quot;dist&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">interactions_abs</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">interactions_pivot_input</span> <span class="o">=</span> <span class="n">interactions_pivot_input</span><span class="p">[</span>
+            <span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">interactions_abs</span><span class="o">==</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))]</span>
+        <span class="n">interactions_pivot_input</span><span class="p">,</span> <span class="n">nb_filtered_rows</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">percentile_filter</span><span class="p">(</span>
+            <span class="n">interactions_pivot_input</span><span class="p">)</span>
+        <span class="n">user_prox_id</span> <span class="o">=</span> <span class="n">interactions_pivot_input</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span>
+            <span class="s2">&quot;dist&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">nb_filtered_rows</span><span class="p">)</span><span class="o">.</span><span class="n">index</span>
+        <span class="c1"># sys.exit(&#39;flag&#39;)</span>
+        <span class="n">interactions_prox</span> <span class="o">=</span> <span class="n">interactions</span><span class="p">[</span><span class="n">interactions</span><span class="p">[</span><span class="n">USER_COLUMNS</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span>
+            <span class="n">user_prox_id</span><span class="p">)]</span>
+        <span class="n">interactions_prox</span> <span class="o">=</span> <span class="n">interactions_prox</span><span class="p">[</span>
+            <span class="o">~</span><span class="n">interactions_prox</span><span class="p">[</span><span class="n">USER_COLUMNS</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">recipes_id</span><span class="p">)]</span>
+        <span class="n">interactions_pivot_output</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">pivot_table_of_df</span><span class="p">(</span><span class="n">interactions_prox</span><span class="p">)</span>
+        <span class="n">interactions_pivot_output</span> <span class="o">=</span> <span class="n">interactions_pivot_output</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span>
+            <span class="n">user_prox_id</span><span class="p">)</span>
+        <span class="n">user_prox_id</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">interactions_prox</span><span class="p">[</span><span class="n">USER_COLUMNS</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+        <span class="n">interactions_selection</span> <span class="o">=</span> <span class="n">interactions_pivot_output</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">user_prox_id</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">interactions_selection</span></div>
+
+
 <div class="viewcode-block" id="User.recipe_suggestion">
 <a class="viewcode-back" href="../../webapp_food.html#webapp_food.user_fooder.User.recipe_suggestion">[docs]</a>
     <span class="k">def</span> <span class="nf">recipe_suggestion</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
@@ -663,11 +749,10 @@
                 <span class="n">interactions</span><span class="p">[</span><span class="n">USER_COLUMNS</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span>
                     <span class="n">recipes_id</span><span class="p">)]</span>
             <span class="n">interactions_pivot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pivot_table_of_df</span><span class="p">(</span><span class="n">interactions_reduce</span><span class="p">)</span>
-            <span class="n">interactions_abs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">abs_deviation</span><span class="p">(</span>
-                <span class="n">recipes_rating</span><span class="p">,</span> <span class="n">interactions_pivot</span><span class="p">)</span>
-            <span class="n">interactions_pivot</span><span class="p">[</span><span class="s2">&quot;dist&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">interactions_abs</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-            <span class="n">interactions_selection</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">near_neighbor</span><span class="p">(</span>
-                <span class="n">recipes_id</span><span class="p">,</span> <span class="n">interactions</span><span class="p">,</span> <span class="n">interactions_pivot</span><span class="p">)</span>
+            <span class="n">interactions_selection</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">near_neighbor</span><span class="p">(</span><span class="n">recipes_id</span><span class="p">,</span>
+                                                        <span class="n">recipes_rating</span><span class="p">,</span>
+                                                        <span class="n">interactions</span><span class="p">,</span>
+                                                        <span class="n">interactions_pivot</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__near_neighbor</span> <span class="o">=</span> <span class="n">interactions_selection</span><span class="o">.</span><span class="n">index</span>
             <span class="k">if</span> <span class="n">interactions_selection</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
                 <span class="c1"># drop recipes already in preferences</span>
