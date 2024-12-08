@@ -82,7 +82,7 @@ def test_percentile_filter():
     data_C = {
         "dist": []
     }
-    interactions_pivot_C = pd.DataFrame({"dist": []})
+    interactions_pivot_C = pd.DataFrame(data_C)
 
     # Case 1: No filtering needed
     filtered_df, nb_rows = uf.User.percentile_filter(interactions_pivot_A,

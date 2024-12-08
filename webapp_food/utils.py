@@ -62,7 +62,7 @@ def search_images(search_term: str) -> str:
     return response.text
 
 
-def print_image(search_term: str, n: int=1) -> list:
+def print_image(search_term: str, n: int = 1) -> list:
     """
     Searches for an image and returns a printable URL.
 
@@ -177,7 +177,7 @@ def visualize_graph(graph) -> None:
 
     Notes
     -----
-    - The graph is saved as an HTML file at 
+    - The graph is saved as an HTML file at
       `webapp_food/graphs/neighbour.html`.
     - The PyVis library is used to create an interactive graph.
 

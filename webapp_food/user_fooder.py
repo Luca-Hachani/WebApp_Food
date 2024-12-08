@@ -253,9 +253,9 @@ class User:
 
     @staticmethod
     def percentile_filter(interactions_pivot: pd.DataFrame,
-                          nb_filtered_rows_min: int=5,
-                          nb_filtered_rows_max: int=100) \
-                            -> tuple[pd.DataFrame, int]:
+                          nb_filtered_rows_min: int = 5,
+                          nb_filtered_rows_max: int = 100
+                          ) -> tuple[pd.DataFrame, int]:
         """
         Filters a DataFrame of user-recipe interactions based on
         the 10th percentile of a "dist" column, with constraints on
@@ -428,7 +428,7 @@ class User:
                                               interactions_pivot_input)
         interactions_pivot_input["dist"] = interactions_abs.sum(axis=1)
         interactions_pivot_input = interactions_pivot_input[
-            ~np.array(np.all(interactions_abs==2, axis=1))]
+            ~np.array(np.all(interactions_abs == 2, axis=1))]
         interactions_pivot_input, nb_filtered_rows = self.percentile_filter(
             interactions_pivot_input)
         user_prox_id = interactions_pivot_input.sort_values(
